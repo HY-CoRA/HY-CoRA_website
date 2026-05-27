@@ -60,9 +60,6 @@
                     <button class="nav-button" data-target="learning">
                         학습
                     </button>
-                    <button class="nav-button" data-target="indicator">
-                        지표
-                    </button>
                 </div>
 
                 <div class="club-intro">
@@ -180,7 +177,7 @@
                     <div class="wrap">
                         <section class="leaders-grid">
                             <article class="leader-card">
-                                <div class="avatar"></div>
+                                <div class="avatar" data-leader-name="최관우"></div>
                                 <div class="card-body">
                                     <h3 class="name">최관우</h3>
                                     <div class="role">회장 · Club Lead</div>
@@ -202,7 +199,7 @@
                             </article>
 
                             <article class="leader-card">
-                                <div class="avatar"></div>
+                                <div class="avatar" data-leader-name="김한결"></div>
                                 <div class="card-body">
                                     <h3 class="name">김한결</h3>
                                     <div class="role">
@@ -226,7 +223,7 @@
                             </article>
 
                             <article class="leader-card">
-                                <div class="avatar"></div>
+                                <div class="avatar" data-leader-name="최현우"></div>
                                 <div class="card-body">
                                     <h3 class="name">최현우</h3>
                                     <div class="role">교육 · Education</div>
@@ -246,7 +243,7 @@
                             </article>
 
                             <article class="leader-card">
-                                <div class="avatar"></div>
+                                <div class="avatar" data-leader-name="강지원"></div>
                                 <div class="card-body">
                                     <h3 class="name">강지원</h3>
                                     <div class="role">
@@ -269,7 +266,7 @@
                             </article>
 
                             <article class="leader-card">
-                                <div class="avatar"></div>
+                                <div class="avatar" data-leader-name="최지민"></div>
                                 <div class="card-body">
                                     <h3 class="name">최지민</h3>
                                     <div class="role">디자인 · Design</div>
@@ -366,20 +363,6 @@
                             <!-- 더 추가하면 자동으로 다음 행으로 3개씩 배치됨 -->
                         </div>
                     </section>
-
-                    <!-- 지표 -->
-                    <h3 id="indicator">지표</h3>
-                    <section class="learning-wrap">
-                        <div class="info-box gallery">
-                            <div class="info-card">
-                                <img class="event-cover" src="images/indicator.png" alt="지표 대체 이미지" style="
-                                            width: 100%;
-                                            display: block;
-                                            object-fit: cover;
-                                        " />
-                            </div>
-                        </div>
-                    </section>
                 </div>
             </div>
         </section>
@@ -421,6 +404,7 @@
         </div>
     </footer>
 
+    <script src="js/site-data.js"></script>
     <script src="js/about.js"></script>
     <script src="js/nav.js"></script>
 </body>

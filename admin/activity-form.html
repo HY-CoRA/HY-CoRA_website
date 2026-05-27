@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1024" />
+  <title>HY-CoRA Admin - 활동 편집</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="admin-page" data-admin-page="activity-form">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <h1>활동 편집</h1>
+      <nav><a href="activity-list.html">목록</a></nav>
+    </header>
+    <form id="activity-form" class="admin-panel admin-form">
+      <input type="hidden" name="id" />
+      <label>상태
+        <select name="status">
+          <option value="scheduled">예정</option>
+          <option value="recruiting">모집중</option>
+          <option value="ongoing">진행중</option>
+          <option value="completed">완료</option>
+        </select>
+      </label>
+      <label>제목<input name="title" required /></label>
+      <label>설명<textarea name="desc" rows="3"></textarea></label>
+      <label>소개<textarea name="intro" rows="5"></textarea></label>
+      <div class="admin-row">
+        <label>멘토<input name="mentor" /></label>
+        <label>역할<input name="role" /></label>
+      </div>
+      <div class="admin-row">
+        <label>장소<input name="place" /></label>
+        <label>참여 인원<input name="participants" /></label>
+      </div>
+      <div class="admin-row schedule-fields">
+        <label>모집 시작일<input name="recruitStart" type="date" /></label>
+        <label>모집 종료일<input name="recruitEnd" type="date" /></label>
+      </div>
+      <label>진행 일정<textarea name="schedule" rows="4" placeholder="한 줄에 하나씩"></textarea></label>
+      <label>사진 URL<textarea name="images" rows="4" placeholder="한 줄에 하나씩"></textarea></label>
+      <div id="activity-image-preview" class="admin-preview-grid"></div>
+      <div class="admin-actions">
+        <button type="submit">저장</button>
+        <a class="admin-button secondary" href="activity-list.html">취소</a>
+      </div>
+    </form>
+  </main>
+  <script src="../js/site-data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

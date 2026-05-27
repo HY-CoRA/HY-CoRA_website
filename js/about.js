@@ -1,25 +1,62 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const navButtons = document.querySelectorAll('.about-nav .nav-button');
+document.addEventListener("DOMContentLoaded", async () => {
+    setupSectionNav();
+    await renderAboutBanner();
+    renderLeaderPhotos();
+});
 
-    navButtons.forEach(button => {
-        button.addEventListener('click', (event) => {
-            event.preventDefault(); // 기본 링크 이동 방지
-                        
-            // 모든 버튼에서 'active' 클래스 제거, 클릭된 버튼에만 추가
-            navButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-                        
-            // data-target 속성에서 스크롤할 대상 ID 가져오기
-            const targetId = button.getAttribute('data-target');
-            const targetSection = document.getElementById(targetId);
-                        
-            if (targetSection) {
-                    // 부드러운 스크롤 적용
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start' // 섹션의 시작 부분으로 스크롤
-                });
-            }
+function setupSectionNav() {
+    const navButtons = document.querySelectorAll(".about-nav .nav-button");
+
+    navButtons.forEach((button) => {
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            navButtons.forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            const targetId = button.getAttribute("data-target");
+            document.getElementById(targetId)?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
         });
     });
-});
+}
+
+async function renderAboutBanner() {
+    const data = window.HYCorAData;
+    const header = document.querySelector(".top-header");
+    if (!data || !header) return;
+
+    const config = await data.getConfig("about-banner");
+    if (!config?.imageUrl) return;
+
+    header.classList.add("has-banner-image");
+    header.style.setProperty("--top-header-bg", `url("${config.imageUrl}")`);
+    header.setAttribute("aria-label", config.altText || "HY-CoRA 소개 페이지 배너");
+}
+
+function renderLeaderPhotos() {
+    const apiBase = window.HYCorAData?.apiBase?.() || "";
+
+    document.querySelectorAll(".leader-card").forEach((card) => {
+        const name =
+            card.querySelector(".avatar")?.dataset.leaderName ||
+            card.querySelector(".name")?.textContent?.trim();
+        const avatar = card.querySelector(".avatar");
+        if (!name || !avatar) return;
+
+        const img = document.createElement("img");
+        img.className = "avatar-img";
+        img.alt = name;
+        img.src = apiBase
+            ? `${apiBase}/uploads/leaders/${encodeURIComponent(name)}.jpg`
+            : `uploads/leaders/${encodeURIComponent(name)}.jpg`;
+        img.onerror = () => {
+            img.remove();
+            avatar.classList.add("avatar-fallback");
+        };
+
+        avatar.innerHTML = "";
+        avatar.appendChild(img);
+    });
+}

@@ -1,189 +1,71 @@
-// js/activities.js
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const navButtons = document.querySelectorAll(".activities-nav .nav-button");
     const container = document.querySelector(".activities-container");
     const paginationEl = document.getElementById("pagination");
     if (!container) return;
 
     const PAGE_SIZE = 9;
+    const statusMap = {
+        모집중: "recruiting",
+        진행중: "ongoing",
+        예정: "scheduled",
+        완료: "completed",
+    };
+    const statusLabels = {
+        scheduled: "예정",
+        recruiting: "모집중",
+        ongoing: "진행중",
+        completed: "완료",
+    };
+
+    let activities = normalizeActivities(await window.HYCorAData.getActivities());
     let currentFilter = "전체";
     let currentPage = 1;
 
-    // ✅ 여기: 객체 사이 콤마 빠지면 전체가 죽음!
-    const activities = [
-        {
-            status: "scheduled",
-            statusLabel: "예정",
-            title: "2026년 1학기 파이썬 교양반 스터디",
-            desc: "교양수업을 파이썬 스터디",
-            date: "매주 2시간",
-            time: "시간: 미정",
-            place: "장소: 융합교육관",
-            participants: "0명",
-            // images: ["images/mt.jpg"],
-            intro: "교양수업을 위주로 진행하는 파이썬 스터디입니다.",
-            // schedule: ["출발", "저녁식사", "레크레이션", "술게임", "정리"],
-            // mentorImg: "images/mentoring.jpg",
-            mentor: "최현우",
-            role: "멘토",
-            // phone: "",
-        },
-        {
-            status: "scheduled",
-            statusLabel: "예정",
-            title: "2026년 1학기 C언어 스터디",
-            desc: "기초 C언어 스터디",
-            date: "매주 2시간",
-            time: "시간: 미정",
-            place: "장소: 융합교육관",
-            participants: "0명",
-            // images: ["images/mt.jpg"],
-            intro: "백준 문제풀이를 위주로 진행하는 C언어 스터디입니다.",
-            // schedule: ["출발", "저녁식사", "레크레이션", "술게임", "정리"],
-            // mentorImg: "images/mentoring.jpg",
-            mentor: "최관우",
-            role: "멘토",
-            phone: "010-3410-4697",
-        },
-        {
-            status: "scheduled",
-            statusLabel: "예정",
-            title: "2026년 1학기 자바 스터디",
-            desc: "자바 스터디",
-            date: "매주 2시간",
-            time: "시간: 미정",
-            place: "장소: 융합교육관",
-            participants: "0명",
-            // images: ["images/mt.jpg"],
-            intro: "백준 문제풀이를 위주로 진행하는 자바 스터디입니다.",
-            // schedule: ["출발", "저녁식사", "레크레이션", "술게임", "정리"],
-            // mentorImg: "images/mentoring.jpg",
-            mentor: "김한결",
-            role: "멘토",
-            // phone: 
-        },
-        {
-            status: "scheduled",
-            statusLabel: "예정",
-            title: "2026년 1학기 자율 스터디 그룹",
-            desc: "자율 스터디",
-            date: "매주 2시간",
-            time: "시간: 미정",
-            place: "장소: 융합교육관",
-            participants: "0명",
-            // images: ["images/mt.jpg"],
-            intro: "자유롭게 진행되는 스터디 그룹입니다.",
-            // schedule: ["출발", "저녁식사", "레크레이션", "술게임", "정리"],
-            // mentorImg: "images/mentoring.jpg",
-            mentor: "강지원",
-            role: "멘토",
-            // phone: 
-        },
+    function normalizeActivities(items) {
+        return (Array.isArray(items) ? items : []).map((item, index) => {
+            const status = item.status === "done" ? "completed" : item.status || "scheduled";
+            return {
+                id: item.id || item._id || index + 1,
+                ...item,
+                status,
+                statusLabel: item.statusLabel || statusLabels[status] || "예정",
+                periodText:
+                    item.periodText ||
+                    item.date ||
+                    formatPeriod(item.recruitStart, item.recruitEnd) ||
+                    "미정",
+                place: stripLabel(item.place, "장소:"),
+                participants: item.participants || "",
+                schedule: Array.isArray(item.schedule) ? item.schedule : [],
+                images: Array.isArray(item.images) ? item.images : [],
+            };
+        });
+    }
 
+    function stripLabel(value, label) {
+        return String(value || "").replace(label, "").trim();
+    }
 
-        // {
-        //     status: "done",
-        //     statusLabel: "완료",
-        //     title: "알고리즘 스터디",
-        //     desc: "백준 문제풀이",
-        //     date: "20xx.2.05",
-        //     time: "18:00",
-        //     place: "스터디룸 3",
-        //     participants: "10명 참여",
-        //     images: ["images/field_trip.jpg"],
-        //     intro: "이번 MT는 팀빌딩과 교류를 위한 프로그램으로 진행됩니다.",
-        //     schedule: ["출발", "바베큐", "게임", "정리"],
-        //     mentorImg: "images/mentor-choi.jpg",
-        //     mentor: "최관우",
-        //     role: "멘토",
-        //     phone: "010-1234-5678",
-        // },
-        // {
-        //     status: "scheduled",
-        //     statusLabel: "예정",
-        //     title: "MT",
-        //     desc: "술파티",
-        //     date: "20xx.2.05",
-        //     time: "18:00",
-        //     place: "~~펜션",
-        //     participants: "30명 참여",
-        //     schedule: ["출발", "바베큐", "게임", "정리"],
-        //     mentor: "최관우",
-        //     role: "멘토",
-        //     phone: "010-1234-5678",
-        //     mentorImg: "images/mentor-choi.jpg",
-        //     images: ["images/mt.jpg", "images/mt2.jpg"]
-        // },
-        // {
-        //     status: "recruiting",
-        //     statusLabel: "모집중",
-        //     title: "가두모집",
-        //     desc: "25-2 동아리 가두모집",
-        //     date: "2025.09.09~2025.09.10",
-        //     time: "10:00~17:00",
-        //     place: "동방 앞 광장",
-        //     participants: "1000명 참여",
-        //     schedule: ["출발", "바베큐", "게임", "정리"],
-        //     mentor: "최관우",
-        //     role: "멘토",
-        //     phone: "010-1234-5678",
-        //     mentorImg: "images/mentor-choi.jpg",
-        //     images: ["images/mt.jpg", "images/mt2.jpg"]
-        // },
-        // {
-        //     status: "ongoing",
-        //     statusLabel: "진행중",
-        //     title: "웹 개발 스터디",
-        //     desc: "웹 개발 기초부터~~",
-        //     date: "20xx.1.15",
-        //     time: "19:00",
-        //     place: "스터디룸 6",
-        //     participants: "6명 참여",
-        //     schedule: ["출발", "바베큐", "게임", "정리"],
-        //     mentor: "최관우",
-        //     role: "멘토",
-        //     phone: "010-1234-5678",
-        //     mentorImg: "images/mentor-choi.jpg",
-        //     images: ["images/mt.jpg", "images/mt2.jpg"]
-        // },
-
-        // {
-        //     status: "ongoing",
-        //     statusLabel: "진행중",
-        //     title: "웹 개발 스터디",
-        //     desc: "웹 개발 기초부터~~",
-        //     date: "20xx.1.15",
-        //     time: "19:00",
-        //     place: "스터디룸 1",
-        //     participants: "6명 참여",
-        //     schedule: ["출발", "바베큐", "게임", "정리"],
-        //     mentor: "최관우",
-        //     role: "멘토",
-        //     phone: "010-1234-5678",
-        //     mentorImg: "images/mentor-choi.jpg",
-        //     images: ["images/mt.jpg", "images/mt2.jpg"],
-        // }
-        // ...필요하면 더 추가
-    ];
+    function formatPeriod(start, end) {
+        if (!start && !end) return "";
+        if (start && end) return `${start} ~ ${end}`;
+        return start || end || "";
+    }
 
     function getFilteredItems() {
         if (currentFilter === "전체") return activities;
-        const map = {
-            모집중: "recruiting",
-            진행중: "ongoing",
-            예정: "scheduled",
-            완료: "done",
-        };
-        return activities.filter((item) => item.status === map[currentFilter]);
+        return activities.filter((item) => item.status === statusMap[currentFilter]);
     }
 
     function renderActivities(items) {
         container.innerHTML = "";
         if (!items.length) {
             container.innerHTML =
-                '<p style="padding:20px;text-align:center;">표시할 활동이 없습니다.</p>';
+                '<p class="empty-message">표시할 활동이 없습니다.</p>';
             return;
         }
+
         items.forEach((item) => {
             const card = document.createElement("div");
             card.className = "activity-card";
@@ -191,32 +73,33 @@ document.addEventListener("DOMContentLoaded", () => {
             const statusDiv = document.createElement("div");
             statusDiv.className = `status ${item.status}`;
             statusDiv.textContent = item.statusLabel;
-            card.appendChild(statusDiv);
 
             const contentDiv = document.createElement("div");
             contentDiv.className = "card-content";
+
+            const rows = [
+                item.desc,
+                item.status === "scheduled" ? "일정: 미정" : item.periodText,
+                item.place ? `장소: ${item.place}` : "",
+                item.participants,
+            ].filter(Boolean);
+
             contentDiv.innerHTML = `
-        <h4>${item.title}</h4>
-        <p>${item.desc}</p>
-        <p>${item.date}</p>
-        <p>${item.time}</p>
-        <p>${item.place}</p>
-        <p>${item.participants}</p>`;
-            card.appendChild(contentDiv);
+                <h4>${escapeHtml(item.title || "제목 없음")}</h4>
+                ${rows.map((row) => `<p>${escapeHtml(row)}</p>`).join("")}
+            `;
 
             const btn = document.createElement("button");
             btn.className = "detail-button";
+            btn.type = "button";
             btn.textContent = "세부 사항";
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                sessionStorage.setItem(
-                    "activities.current",
-                    JSON.stringify(item)
-                );
+            btn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                sessionStorage.setItem("activities.current", JSON.stringify(item));
                 window.location.href = "activities_detail.html";
             });
-            card.appendChild(btn);
 
+            card.append(statusDiv, contentDiv, btn);
             container.appendChild(card);
         });
     }
@@ -248,17 +131,12 @@ document.addEventListener("DOMContentLoaded", () => {
         wrapper.className = "pagination-inner";
         wrapper.appendChild(makeBtn("«", 1, currentPage === 1, "첫 페이지"));
         wrapper.appendChild(
-            makeBtn(
-                "‹",
-                Math.max(1, currentPage - 1),
-                currentPage === 1,
-                "이전 페이지"
-            )
+            makeBtn("‹", Math.max(1, currentPage - 1), currentPage === 1, "이전 페이지")
         );
-        for (let p = 1; p <= totalPages; p++) {
-            const b = makeBtn(String(p), p, false, `페이지 ${p}`);
-            if (p === currentPage) b.classList.add("active");
-            wrapper.appendChild(b);
+        for (let page = 1; page <= totalPages; page += 1) {
+            const btn = makeBtn(String(page), page, false, `페이지 ${page}`);
+            if (page === currentPage) btn.classList.add("active");
+            wrapper.appendChild(btn);
         }
         wrapper.appendChild(
             makeBtn(
@@ -269,36 +147,44 @@ document.addEventListener("DOMContentLoaded", () => {
             )
         );
         wrapper.appendChild(
-            makeBtn(
-                "»",
-                totalPages,
-                currentPage === totalPages,
-                "마지막 페이지"
-            )
+            makeBtn("»", totalPages, currentPage === totalPages, "마지막 페이지")
         );
 
-        paginationEl.innerHTML = "";
-        paginationEl.appendChild(wrapper);
+        paginationEl.replaceChildren(wrapper);
     }
 
     function applyAndRender() {
         const filtered = getFilteredItems();
-        const total = filtered.length;
-        const startIdx = (currentPage - 1) * PAGE_SIZE;
-        const endIdx = startIdx + PAGE_SIZE;
-        renderActivities(filtered.slice(startIdx, endIdx));
-        renderPagination(total, PAGE_SIZE, currentPage);
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const slice = filtered.slice(start, start + PAGE_SIZE);
+        renderActivities(slice);
+        renderPagination(filtered.length, PAGE_SIZE, currentPage);
     }
 
-    navButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-            navButtons.forEach((b) => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentFilter = btn.textContent.trim();
+    navButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            navButtons.forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+            currentFilter = button.textContent.trim();
             currentPage = 1;
             applyAndRender();
         });
     });
 
+    window.renderActivities = (items) => {
+        activities = normalizeActivities(items);
+        currentPage = 1;
+        applyAndRender();
+    };
+
     applyAndRender();
 });
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}

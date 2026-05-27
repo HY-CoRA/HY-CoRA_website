@@ -24,7 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const h5 = q(".top-header h5:last-of-type");
     if (h2) h2.textContent = data.title || "";
     if (h5)
-        h5.textContent = [data.date, data.time, data.place]
+        h5.textContent = [
+            data.status === "scheduled"
+                ? "일정: 미정"
+                : data.periodText || data.date,
+            data.place,
+        ]
             .filter(Boolean)
             .join(" · ");
 
@@ -56,6 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 li.textContent = txt;
                 return li;
             });
+            if (!lis.length) {
+                const li = document.createElement("li");
+                li.textContent =
+                    data.status === "scheduled" ? "미정" : "일정 미등록";
+                lis.push(li);
+            }
             ol.replaceChildren(...lis);
         }
     }

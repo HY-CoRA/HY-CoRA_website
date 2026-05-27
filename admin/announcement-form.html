@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1024" />
+  <title>HY-CoRA Admin - 공지 편집</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="admin-page" data-admin-page="announcement-form">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <h1>공지 편집</h1>
+      <nav><a href="announcement-list.html">목록</a></nav>
+    </header>
+    <form id="announcement-form" class="admin-panel admin-form">
+      <input type="hidden" name="id" />
+      <label>제목<input name="title" required /></label>
+      <label>카테고리
+        <select name="category">
+          <option value="event">행사</option>
+          <option value="recruitment">모집</option>
+          <option value="etc">기타</option>
+        </select>
+      </label>
+      <label>일자<input name="date" /></label>
+      <label>요약<textarea name="summary" rows="3"></textarea></label>
+      <label>내용<textarea name="content" rows="8"></textarea></label>
+      <div class="admin-row">
+        <label>정원<input name="capacity" /></label>
+        <label>링크<input name="link" /></label>
+      </div>
+      <label class="admin-check"><input name="published" type="checkbox" /> 발행</label>
+      <button type="button" id="parse-kakao">카카오톡 메시지 파싱</button>
+      <button type="submit">저장</button>
+    </form>
+  </main>
+  <script src="../js/site-data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

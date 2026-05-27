@@ -166,6 +166,26 @@ body {
     font-size: 1.5em;
 } */
 
+.intro-image-placeholder {
+    width: min(360px, 32vw);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+.intro-image-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.intro-image-placeholder.is-empty {
+    background: url('images/index-background1.jpg') center / cover no-repeat;
+}
+
 /* About Section */
 .about-section {
     padding: 50px 0;
@@ -334,6 +354,18 @@ body {
     border-radius: 50%;
     background-color: #5fd35f;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.leader-card .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.leader-card .avatar-fallback {
+    background-color: #5fd35f;
 }
 
 /* 카드 본문 */
@@ -449,51 +481,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* 바깥 회색 캡슐 */
-.indicator-wrap {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto 80px;
-    background: #e1e6f6;
-    border-radius: 44px;
-    padding: 40px 48px;
-    box-sizing: border-box;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* 2열 그리드 */
-.indicator-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 36px 48px;
-    /* 행, 열 간격 */
-}
-
-/* 흰색 카드 */
-.indicator-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 28px 32px;
-    box-sizing: border-box;
-}
-
-/* 타이틀 */
-.indicator-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin: 0 0 12px 0;
-    color: #222;
-}
-
-/* 본문 */
-.indicator-desc {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
-    line-height: 1.5;
-}
-
 /* Design #06에서 수정 */
 
 /* Activities Section */
@@ -559,8 +546,8 @@ body {
     background-color: #ffc107;
 }
 
-.status.done {
-    background-color: black;
+.status.completed {
+    background-color: #343a40;
 }
 
 .card-content h4 {
@@ -1121,6 +1108,10 @@ strong {
     /* 블러 가장자리 비치는 거 방지용 살짝 확대 */
     z-index: 0;
     /* 음수 X */
+}
+
+.top-header.has-banner-image::before {
+    background-image: var(--top-header-bg);
 }
 
 /* 자식 요소를 위로 올리기 */
@@ -1883,4 +1874,237 @@ strong {
     /* 박스에 꽉 차게 */
     cursor: zoom-in;
     /* 확대 가능 표시 */
+}
+
+/* Admin */
+.admin-page {
+    background: #f5f7fb;
+    color: #172033;
+}
+
+.admin-shell {
+    width: min(1120px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.admin-header nav {
+    display: flex;
+    gap: 12px;
+}
+
+.admin-header a,
+.admin-card,
+.admin-button,
+.admin-table a {
+    color: #174ea6;
+    text-decoration: none;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.admin-card,
+.admin-panel,
+.admin-inline-card {
+    background: #fff;
+    border: 1px solid #d9e1f2;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(23, 32, 51, 0.08);
+}
+
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 24px;
+}
+
+.admin-card strong {
+    color: #172033;
+    font-size: 1.15rem;
+}
+
+.admin-card span {
+    color: #59657a;
+}
+
+.admin-panel {
+    padding: 24px;
+    margin-bottom: 18px;
+}
+
+.admin-panel h2 {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+}
+
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.admin-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 700;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c9d3e6;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font: inherit;
+    background: #fff;
+}
+
+.admin-form input:disabled {
+    background: #eef2f7;
+    color: #7a8495;
+}
+
+.admin-form button,
+.admin-panel > button,
+.admin-table button,
+.admin-button {
+    border: 0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    background: #174ea6;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-button.secondary {
+    display: inline-flex;
+    align-items: center;
+    background: #e7ecf6;
+    color: #172033;
+}
+
+.admin-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-check {
+    flex-direction: row !important;
+    align-items: center;
+}
+
+.admin-check input {
+    width: auto;
+}
+
+.admin-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.admin-inline-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr auto;
+    gap: 10px;
+    align-items: end;
+    padding: 14px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    border-bottom: 1px solid #e0e6f2;
+    padding: 12px;
+    text-align: left;
+}
+
+.admin-table th {
+    background: #f0f4fb;
+}
+
+.admin-table td:last-child {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.admin-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.admin-preview-grid img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.admin-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    padding: 12px 16px;
+    background: #172033;
+    color: #fff;
+    border-radius: 6px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .18s ease, transform .18s ease;
+    pointer-events: none;
+}
+
+.admin-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.empty-message {
+    grid-column: 1 / -1;
+    padding: 20px;
+    text-align: center;
+    color: #59657a;
+}
+
+.apply-button.disabled {
+    pointer-events: none;
+    opacity: .62;
+    background: #717b8c;
 }

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1024" />
+  <title>HY-CoRA Admin - 공지사항</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="admin-page" data-admin-page="announcement-list">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <h1>공지사항</h1>
+      <nav><a href="index.html">관리 홈</a><a href="announcement-form.html">새 공지</a></nav>
+    </header>
+    <section class="admin-panel">
+      <table class="admin-table">
+        <thead><tr><th>상태</th><th>카테고리</th><th>제목</th><th>일자</th><th>작업</th></tr></thead>
+        <tbody id="announcement-list"></tbody>
+      </table>
+    </section>
+  </main>
+  <script src="../js/site-data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1024" />
+  <title>HY-CoRA Admin - 사이트 콘텐츠</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="admin-page" data-admin-page="site-content">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <h1>사이트 콘텐츠</h1>
+      <nav><a href="index.html">관리 홈</a><a href="../index.html">사이트 보기</a></nav>
+    </header>
+
+    <section class="admin-panel">
+      <h2>배너 이미지</h2>
+      <form id="banner-form" class="admin-form">
+        <label>API Base URL<input name="apiBase" placeholder="https://api.hycora.com" /></label>
+        <label>메인 배너 URL<input name="mainImageUrl" /></label>
+        <label>메인 배너 Alt<input name="mainAltText" /></label>
+        <label>소개 배너 URL<input name="aboutImageUrl" /></label>
+        <label>소개 배너 Alt<input name="aboutAltText" /></label>
+        <button type="submit">저장</button>
+      </form>
+    </section>
+
+    <section class="admin-panel">
+      <h2>Past Events</h2>
+      <div id="past-events-editor" class="admin-stack"></div>
+      <button type="button" id="add-past-event">이벤트 추가</button>
+      <button type="button" id="save-past-events">저장</button>
+    </section>
+  </main>
+  <script src="../js/site-data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

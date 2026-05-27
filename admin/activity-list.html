@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1024" />
+  <title>HY-CoRA Admin - 활동내용</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="admin-page" data-admin-page="activity-list">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <h1>활동내용</h1>
+      <nav><a href="index.html">관리 홈</a><a href="activity-form.html">새 활동</a></nav>
+    </header>
+    <section class="admin-panel">
+      <table class="admin-table">
+        <thead><tr><th>상태</th><th>제목</th><th>장소</th><th>작업</th></tr></thead>
+        <tbody id="activity-list"></tbody>
+      </table>
+    </section>
+  </main>
+  <script src="../js/site-data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
