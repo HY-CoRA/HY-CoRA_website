@@ -49,9 +49,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function detailHref(item) {
-        if (item.category === "recruitment") return "announcement_recruitment_detail.html";
-        if (item.category === "event") return "announcement_notice_detail.html";
-        return "announcement_etc_detail.html";
+        const id = encodeURIComponent(item.id || item._id || "");
+        const suffix = id ? `?id=${id}` : "";
+        if (item.category === "recruitment") return `announcement_recruitment_detail.html${suffix}`;
+        if (item.category === "event") return `announcement_notice_detail.html${suffix}`;
+        return `announcement_etc_detail.html${suffix}`;
     }
 
     function renderAnnouncements(itemsSlice) {

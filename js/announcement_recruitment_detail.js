@@ -1,14 +1,12 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const raw = sessionStorage.getItem("announcement.current");
+document.addEventListener("DOMContentLoaded", async () => {
     const container = document.querySelector("main");
     if (!container) return;
 
-    if (!raw) {
+    const data = await loadAnnouncementDetail();
+    if (!data) {
         container.innerHTML = emptyHTML("상세 데이터를 찾을 수 없습니다.");
         return;
     }
-
-    const data = JSON.parse(raw);
 
     // 안전 이스케이프
     const esc = escapeHTML;
@@ -106,6 +104,16 @@ document.addEventListener("DOMContentLoaded", () => {
     container.innerHTML = "";
     container.appendChild(card);
 });
+
+async function loadAnnouncementDetail() {
+    const id = new URLSearchParams(location.search).get("id");
+    if (id && window.HYCorAData?.getAnnouncement) {
+        const api = await window.HYCorAData.getAnnouncement(id);
+        if (api) return api;
+    }
+    const raw = sessionStorage.getItem("announcement.current");
+    return raw ? JSON.parse(raw) : null;
+}
 
 // 공통: 빈 상태 UI
 function emptyHTML(msg) {

@@ -1,14 +1,12 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const raw = sessionStorage.getItem("announcement.current");
+document.addEventListener("DOMContentLoaded", async () => {
     const container = document.querySelector(".notices-section .container");
     if (!container) return;
 
-    if (!raw) {
+    const data = await loadAnnouncementDetail();
+    if (!data) {
         container.innerHTML = emptyHTML("잘못된 접근입니다.");
         return;
     }
-
-    const data = JSON.parse(raw);
 
     // 모집 공고만 보여주기
     if (data.category !== "event") {
@@ -75,6 +73,16 @@ document.addEventListener("DOMContentLoaded", () => {
     container.innerHTML = "";
     container.appendChild(card);
 });
+
+async function loadAnnouncementDetail() {
+    const id = new URLSearchParams(location.search).get("id");
+    if (id && window.HYCorAData?.getAnnouncement) {
+        const api = await window.HYCorAData.getAnnouncement(id);
+        if (api) return api;
+    }
+    const raw = sessionStorage.getItem("announcement.current");
+    return raw ? JSON.parse(raw) : null;
+}
 
 // 공통: 빈 상태 UI
 function emptyHTML(msg) {

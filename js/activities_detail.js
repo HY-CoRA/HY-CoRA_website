@@ -1,5 +1,5 @@
 // js/activities_detail.js
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const q = (sel, root = document) => root.querySelector(sel);
     const esc = (s) => String(s ?? "");
     const norm = (s) =>
@@ -12,12 +12,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return hit ? hit.closest(".info-box") : null;
     };
 
-    // === 세션 로드 ===
+    // === URL id 우선, 기존 세션 데이터는 fallback ===
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
     const raw =
         sessionStorage.getItem("activities.current") ||
         sessionStorage.getItem("activity.current");
-    if (!raw) return;
-    const data = JSON.parse(raw);
+    let data = null;
+    if (id && window.HYCorAData?.getActivity) {
+        data = await window.HYCorAData.getActivity(id);
+    }
+    if (!data && raw) data = JSON.parse(raw);
+    if (!data) return;
 
     // === 상단 타이틀/메타 ===
     const h2 = q(".top-header h2");

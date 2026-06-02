@@ -30,19 +30,22 @@
         form.aboutImageUrl.value = about?.imageUrl || "";
         form.aboutAltText.value = about?.altText || "HY-CoRA 소개 페이지 배너";
 
-        form.addEventListener("submit", (event) => {
+        form.addEventListener("submit", async (event) => {
             event.preventDefault();
-            data.setApiBase(form.apiBase.value);
-            data.saveConfig("main-banner", {
-                imageUrl: form.mainImageUrl.value.trim(),
-                altText: form.mainAltText.value.trim() || "HY-CoRA 메인 배너",
+            const button = form.querySelector('button[type="submit"]');
+            await withBusy(button, "저장 중...", async () => {
+                data.setApiBase(form.apiBase.value);
+                await data.saveConfig("main-banner", {
+                    imageUrl: form.mainImageUrl.value.trim(),
+                    altText: form.mainAltText.value.trim() || "HY-CoRA 메인 배너",
+                });
+                await data.saveConfig("about-banner", {
+                    imageUrl: form.aboutImageUrl.value.trim(),
+                    altText:
+                        form.aboutAltText.value.trim() || "HY-CoRA 소개 페이지 배너",
+                });
+                toast("배너 설정을 저장했습니다.");
             });
-            data.saveConfig("about-banner", {
-                imageUrl: form.aboutImageUrl.value.trim(),
-                altText:
-                    form.aboutAltText.value.trim() || "HY-CoRA 소개 페이지 배너",
-            });
-            toast("배너 설정을 저장했습니다.");
         });
 
         let currentEvents = events.slice();
@@ -84,11 +87,14 @@
             });
             renderEvents();
         });
-        document.getElementById("save-past-events").addEventListener("click", () => {
-            data.savePastEvents(
-                currentEvents.map((item, index) => ({ ...item, order: index + 1 }))
-            );
-            toast("Past Events를 저장했습니다.");
+        document.getElementById("save-past-events").addEventListener("click", async (event) => {
+            await withBusy(event.currentTarget, "저장 중...", async () => {
+                currentEvents = await data.savePastEvents(
+                    currentEvents.map((item, index) => ({ ...item, order: index + 1 }))
+                );
+                toast("Past Events를 저장했습니다.");
+                renderEvents();
+            });
         });
 
         renderEvents();
@@ -167,6 +173,12 @@
                 img.src = saved;
                 img.alt = name;
                 preview.appendChild(img);
+            } else if (data.apiReady()) {
+                const img = document.createElement("img");
+                img.src = `${data.apiBase()}/uploads/leaders/${encodeURIComponent(name)}.jpg`;
+                img.alt = name;
+                img.onerror = () => img.remove();
+                preview.appendChild(img);
             }
 
             const fileInput = document.createElement("input");
@@ -188,31 +200,34 @@
             deleteBtn.type = "button";
             deleteBtn.className = "admin-btn admin-btn-danger";
             deleteBtn.textContent = "사진 삭제";
-            deleteBtn.disabled = !saved;
-            deleteBtn.addEventListener("click", () => {
+            deleteBtn.disabled = !saved && !data.apiReady();
+            deleteBtn.addEventListener("click", async () => {
                 if (!confirm(`${name}의 사진을 삭제할까요?`)) return;
-                localStorage.removeItem(`hycora.leader.photo.${name}`);
-                preview.innerHTML = "";
-                deleteBtn.disabled = true;
-                toast(`${name} 사진이 삭제되었습니다.`);
+                await withBusy(deleteBtn, "삭제 중...", async () => {
+                    await data.deleteLeaderPhoto(name);
+                    preview.innerHTML = "";
+                    deleteBtn.disabled = true;
+                    toast(`${name} 사진이 삭제되었습니다.`);
+                });
             });
 
-            fileInput.addEventListener("change", () => {
+            fileInput.addEventListener("change", async () => {
                 const file = fileInput.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const dataUrl = e.target.result;
-                    localStorage.setItem(`hycora.leader.photo.${name}`, dataUrl);
+                await withBusy(uploadBtn, "업로드 중...", async () => {
+                    const result = await data.uploadLeaderPhoto(name, file);
+                    const imageUrl =
+                        result?.url ||
+                        result?.imageUrl ||
+                        `${data.apiBase()}/uploads/leaders/${encodeURIComponent(name)}.jpg`;
                     preview.innerHTML = "";
                     const img = document.createElement("img");
-                    img.src = dataUrl;
+                    img.src = imageUrl;
                     img.alt = name;
                     preview.appendChild(img);
                     deleteBtn.disabled = false;
                     toast(`${name} 사진이 저장되었습니다.`);
-                };
-                reader.readAsDataURL(file);
+                });
                 fileInput.value = "";
             });
 
@@ -250,14 +265,12 @@
         });
 
         tbody.querySelectorAll("[data-delete]").forEach((button) => {
-            button.addEventListener("click", () => {
+            button.addEventListener("click", async () => {
                 if (!confirm("활동을 삭제할까요?")) return;
-                data.saveActivities(
-                    activities.filter(
-                        (item) => String(item.id || item._id) !== button.dataset.delete
-                    )
-                );
-                location.reload();
+                await withBusy(button, "삭제 중...", async () => {
+                    await data.deleteActivity(button.dataset.delete);
+                    location.reload();
+                });
             });
         });
     }
@@ -298,9 +311,34 @@
         syncFields();
 
         form.images.addEventListener("input", renderActivityPreview);
+        form.imageFiles?.addEventListener("change", async () => {
+            const files = form.imageFiles.files;
+            if (!files?.length) return;
+            if (!data.apiReady()) {
+                toast("백엔드 API Base URL 설정 후 업로드할 수 있습니다.");
+                form.imageFiles.value = "";
+                return;
+            }
+            const activityId = form.id.value || id;
+            if (!activityId) {
+                toast("활동을 먼저 저장한 뒤 사진을 업로드해 주세요.");
+                form.imageFiles.value = "";
+                return;
+            }
+
+            await withBusy(form.imageFiles, "업로드 중...", async () => {
+                const result = await data.uploadActivityImages(activityId, files);
+                const urls = normalizeUploadedUrls(result);
+                const current = lines(form.images.value);
+                form.images.value = [...current, ...urls].join("\n");
+                renderActivityPreview();
+                toast("활동 사진을 업로드했습니다.");
+            });
+            form.imageFiles.value = "";
+        });
         renderActivityPreview();
 
-        form.addEventListener("submit", (event) => {
+        form.addEventListener("submit", async (event) => {
             event.preventDefault();
             const next = {
                 id: form.id.value || Date.now(),
@@ -324,19 +362,11 @@
                 schedule: lines(form.schedule.value),
                 images: lines(form.images.value),
             };
-            const exists = activities.some(
-                (item) => String(item.id || item._id) === String(next.id)
-            );
-            data.saveActivities(
-                exists
-                    ? activities.map((item) =>
-                          String(item.id || item._id) === String(next.id)
-                              ? next
-                              : item
-                      )
-                    : [...activities, next]
-            );
-            location.href = "activity-list.html";
+            const button = form.querySelector('button[type="submit"]');
+            await withBusy(button, "저장 중...", async () => {
+                await data.saveActivity(next);
+                location.href = "activity-list.html";
+            });
         });
     }
 
@@ -349,19 +379,22 @@
         form.returningUrl.value = links.returning?.url || "";
         form.returningLabel.value = links.returning?.label || "재가입 신청하기";
 
-        form.addEventListener("submit", (event) => {
+        form.addEventListener("submit", async (event) => {
             event.preventDefault();
-            data.saveConfig("apply-links", {
-                newMember: {
-                    url: form.newUrl.value.trim(),
-                    label: form.newLabel.value.trim() || "신규 지원하기",
-                },
-                returning: {
-                    url: form.returningUrl.value.trim(),
-                    label: form.returningLabel.value.trim() || "재가입 신청하기",
-                },
+            const button = form.querySelector('button[type="submit"]');
+            await withBusy(button, "저장 중...", async () => {
+                await data.saveConfig("apply-links", {
+                    newMember: {
+                        url: form.newUrl.value.trim(),
+                        label: form.newLabel.value.trim() || "신규 지원하기",
+                    },
+                    returning: {
+                        url: form.returningUrl.value.trim(),
+                        label: form.returningLabel.value.trim() || "재가입 신청하기",
+                    },
+                });
+                toast("모집안내 설정을 저장했습니다.");
             });
-            toast("모집안내 설정을 저장했습니다.");
         });
     }
 
@@ -386,14 +419,12 @@
         });
 
         tbody.querySelectorAll("[data-delete]").forEach((button) => {
-            button.addEventListener("click", () => {
+            button.addEventListener("click", async () => {
                 if (!confirm("공지를 삭제할까요?")) return;
-                data.saveAnnouncements(
-                    announcements.filter(
-                        (item) => String(item.id || item._id) !== button.dataset.delete
-                    )
-                );
-                location.reload();
+                await withBusy(button, "삭제 중...", async () => {
+                    await data.deleteAnnouncement(button.dataset.delete);
+                    location.reload();
+                });
             });
         });
     }
@@ -420,19 +451,21 @@
             form.published.checked = true;
         }
 
-        document.getElementById("parse-kakao").addEventListener("click", () => {
+        document.getElementById("parse-kakao").addEventListener("click", async (event) => {
             const raw = prompt("카카오톡 공지 메시지를 붙여넣어 주세요.");
             if (!raw) return;
-            const parsed = parseKakao(raw);
+            const parsed = await parseKakao(raw, event.currentTarget);
             form.title.value = parsed.title;
             form.category.value = parsed.category;
             form.date.value = parsed.date;
             form.summary.value = parsed.summary;
             form.content.value = parsed.content;
+            form.capacity.value = parsed.capacity || form.capacity.value;
+            form.link.value = parsed.link || form.link.value;
             form.published.checked = false;
         });
 
-        form.addEventListener("submit", (event) => {
+        form.addEventListener("submit", async (event) => {
             event.preventDefault();
             const now = new Date().toISOString().slice(0, 10).replaceAll("-", ".");
             const next = {
@@ -449,19 +482,11 @@
                 lastModified: now,
                 source: "manual",
             };
-            const exists = announcements.some(
-                (item) => String(item.id || item._id) === String(next.id)
-            );
-            data.saveAnnouncements(
-                exists
-                    ? announcements.map((item) =>
-                          String(item.id || item._id) === String(next.id)
-                              ? next
-                              : item
-                      )
-                    : [...announcements, next]
-            );
-            location.href = "announcement-list.html";
+            const button = form.querySelector('button[type="submit"]');
+            await withBusy(button, "저장 중...", async () => {
+                await data.saveAnnouncement(next);
+                location.href = "announcement-list.html";
+            });
         });
     }
 
@@ -478,22 +503,71 @@
         });
     }
 
-    function parseKakao(raw) {
+    async function parseKakao(raw, button) {
+        return withBusy(button, "파싱 중...", async () =>
+            normalizeParsedKakao(parseKakaoLocal(raw), raw)
+        );
+    }
+
+    function parseKakaoLocal(raw) {
         const text = raw.trim();
-        const firstLine = text.split(/\n/).find(Boolean) || "공지사항";
-        const category = firstLine.includes("모집")
+        const lines = text.split(/\n/).map((line) => line.trim()).filter(Boolean);
+        const firstLine = lines.find((line) => !/^[-=*_\s]+$/.test(line)) || "공지사항";
+        const category = /모집|지원|신청|동아리원|신입/.test(text)
             ? "recruitment"
-            : firstLine.includes("행사")
+            : /행사|특강|세미나|견학|MT|엠티|야식|열공단/.test(text)
             ? "event"
             : "etc";
-        const dateMatch = text.match(/\d{4}[.-]\d{1,2}[.-]\d{1,2}|\d{1,2}월\s*\d{1,2}일/);
+        const dateMatch = text.match(
+            /(\d{4}[.-]\d{1,2}[.-]\d{1,2}|\d{1,2}월\s*\d{1,2}일)(\s*[~\-–]\s*(\d{4}[.-]\d{1,2}[.-]\d{1,2}|\d{1,2}월\s*\d{1,2}일))?/
+        );
+        const capacityMatch = text.match(/(?:정원|인원|모집\s*인원)\s*[:：]?\s*([0-9]+명?)/);
+        const linkMatch = text.match(/https?:\/\/[^\s)]+/);
+        const labeledTitle = lines.find((line) => /^(제목|공지명)\s*[:：]/.test(line));
+        const labeledDate = lines.find((line) => /^(일시|일자|기간|날짜)\s*[:：]/.test(line));
+        const labeledCapacity = lines.find((line) => /^(정원|인원|모집\s*인원)\s*[:：]/.test(line));
+        const labeledLink = lines.find((line) => /^(링크|신청|지원)\s*[:：]/.test(line));
+
         return {
             category,
-            title: firstLine.replace(/\[(행사|모집|기타)\]/g, "").trim(),
-            date: dateMatch ? dateMatch[0].replaceAll("-", ".") : "",
+            title: cleanLabeledValue(labeledTitle) || firstLine.replace(/\[(행사|모집|기타|공지)\]/g, "").trim(),
+            date: cleanLabeledValue(labeledDate) || (dateMatch ? dateMatch[0].replaceAll("-", ".") : ""),
             summary: text.replace(/\s+/g, " ").slice(0, 80),
             content: text,
+            capacity: cleanLabeledValue(labeledCapacity) || (capacityMatch ? capacityMatch[1] : ""),
+            link: cleanLabeledValue(labeledLink) || (linkMatch ? linkMatch[0] : ""),
         };
+    }
+
+    function normalizeParsedKakao(parsed, raw) {
+        const local = parseKakaoLocal(raw);
+        return {
+            category: parsed?.category || local.category,
+            title: parsed?.title || local.title,
+            date: parsed?.date || local.date,
+            summary: parsed?.summary || local.summary,
+            content: parsed?.content || parsed?.body || local.content,
+            capacity: parsed?.capacity || local.capacity,
+            link: parsed?.link || parsed?.url || local.link,
+        };
+    }
+
+    function normalizeUploadedUrls(result) {
+        if (Array.isArray(result)) {
+            return result
+                .map((item) => (typeof item === "string" ? item : item.url || item.imageUrl))
+                .filter(Boolean);
+        }
+        if (Array.isArray(result?.images)) {
+            return result.images
+                .map((item) => (typeof item === "string" ? item : item.url || item.imageUrl))
+                .filter(Boolean);
+        }
+        return [result?.url || result?.imageUrl].filter(Boolean);
+    }
+
+    function cleanLabeledValue(line) {
+        return String(line || "").replace(/^[^:：]+[:：]\s*/, "").trim();
     }
 
     function lines(value) {
@@ -513,6 +587,25 @@
         el.textContent = message;
         el.classList.add("show");
         setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    async function withBusy(button, label, task) {
+        if (!button) return task();
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = label;
+        try {
+            return await task();
+        } catch (error) {
+            toast(error.status === 401 ? "로그인이 필요합니다." : error.message || "처리 중 오류가 발생했습니다.");
+            if (error.status === 401) {
+                window.AdminAuth?.clearServerSession?.();
+            }
+            throw error;
+        } finally {
+            button.disabled = false;
+            button.textContent = original;
+        }
     }
 
     function escapeHtml(value) {

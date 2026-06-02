@@ -45,9 +45,9 @@ function renderLeaderPhotos() {
         const avatar = card.querySelector(".avatar");
         if (!name || !avatar) return;
 
-        // localStorage에서 저장된 사진 우선 로드
+        // 백엔드가 연결되면 서버 사진을 우선 사용하고, 미연결 상태에서는 로컬 fallback을 사용한다.
         const saved = localStorage.getItem(`hycora.leader.photo.${name}`);
-        if (saved) {
+        if (!apiBase && saved) {
             setAvatarImage(avatar, name, saved);
         } else {
             const img = document.createElement("img");

@@ -96,7 +96,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             btn.addEventListener("click", (event) => {
                 event.stopPropagation();
                 sessionStorage.setItem("activities.current", JSON.stringify(item));
-                window.location.href = "activities_detail.html";
+                window.location.href = `activities_detail.html?id=${encodeURIComponent(
+                    item.id || item._id
+                )}`;
             });
 
             card.append(statusDiv, contentDiv, btn);

@@ -486,7 +486,7 @@ body {
     width: min(760px, 100%);
     min-height: 310px;
     margin: 30px auto 80px;
-    padding: 38px 0 24px;
+    padding: 38px 0 0;
     box-sizing: border-box;
 }
 
@@ -540,6 +540,14 @@ body {
     grid-template-columns: 1fr 1fr;
     min-height: 190px;
     padding-top: 105px;
+}
+
+.contributor-item + .contributor-item {
+    padding-top: 60px;
+}
+
+.contributor-item + .contributor-item::before {
+    top: 40px;
 }
 
 .contributor-item::before {

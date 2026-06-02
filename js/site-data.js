@@ -155,14 +155,77 @@
         return (localStorage.getItem(API_BASE_KEY) || "").replace(/\/$/, "");
     }
 
-    async function fetchJson(path) {
+    function authToken() {
+        return sessionStorage.getItem("hycora.admin.token") || "";
+    }
+
+    function apiReady() {
+        return Boolean(apiBase());
+    }
+
+    function normalizeId(item, fallback) {
+        if (!item || typeof item !== "object") return item;
+        return {
+            id: item.id || item._id || fallback,
+            ...item,
+        };
+    }
+
+    function normalizeList(items) {
+        return Array.isArray(items)
+            ? items.map((item, index) => normalizeId(item, index + 1))
+            : [];
+    }
+
+    async function requestJson(path, options = {}) {
         const base = apiBase();
         if (!base) return null;
 
+        const headers = { ...(options.headers || {}) };
+        const token = authToken();
+        let body = options.body;
+
+        if (body && !(body instanceof FormData)) {
+            headers["Content-Type"] = "application/json";
+            body = JSON.stringify(body);
+        }
+
+        if (token) headers.Authorization = `Bearer ${token}`;
+
         try {
-            const response = await fetch(`${base}${path}`);
-            if (!response.ok) throw new Error(`${response.status}`);
-            return await response.json();
+            const response = await fetch(`${base}${path}`, {
+                ...options,
+                headers,
+                body,
+                credentials: options.credentials || "include",
+            });
+            const text = await response.text();
+            const payload = text ? JSON.parse(text) : null;
+
+            if (!response.ok) {
+                const error = new Error(
+                    payload?.message || payload?.error || `${response.status}`
+                );
+                error.status = response.status;
+                error.payload = payload;
+                throw error;
+            }
+
+            return payload;
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                const parseError = new Error("API 응답을 해석할 수 없습니다.");
+                parseError.cause = error;
+                throw parseError;
+            }
+            throw error;
+        }
+    }
+
+    async function fetchJson(path) {
+        if (!apiReady()) return null;
+        try {
+            return await requestJson(path);
         } catch (error) {
             console.warn(`HY-CoRA API fallback: ${path}`, error);
             return null;
@@ -184,7 +247,16 @@
     async function getActivities() {
         const local = readLocal("activities", defaults.activities);
         const api = await fetchJson("/api/activities");
-        return Array.isArray(api) ? api : local;
+        return Array.isArray(api) ? normalizeList(api) : local;
+    }
+
+    async function getActivity(id) {
+        const local = readLocal("activities", defaults.activities);
+        if (apiReady() && id) {
+            const api = await fetchJson(`/api/activities/${encodeURIComponent(id)}`);
+            if (api) return normalizeId(api);
+        }
+        return local.find((item) => String(item.id || item._id) === String(id)) || null;
     }
 
     async function getAnnouncements(includeDrafts) {
@@ -192,32 +264,237 @@
         const api = await fetchJson(
             includeDrafts ? "/api/admin/announcements" : "/api/announcements"
         );
-        const data = Array.isArray(api) ? api : local;
+        const data = Array.isArray(api) ? normalizeList(api) : local;
         return includeDrafts ? data : data.filter((item) => item.published !== false);
+    }
+
+    async function getAnnouncement(id, includeDrafts = false) {
+        const local = readLocal("announcements", defaults.announcements);
+        if (apiReady() && id) {
+            const path = includeDrafts
+                ? `/api/admin/announcements/${encodeURIComponent(id)}`
+                : `/api/announcements/${encodeURIComponent(id)}`;
+            const api = await fetchJson(path);
+            if (api) return normalizeId(api);
+        }
+        const item =
+            local.find((entry) => String(entry.id || entry._id) === String(id)) ||
+            null;
+        return item && (includeDrafts || item.published !== false) ? item : null;
+    }
+
+    async function saveConfig(key, value) {
+        if (!apiReady()) {
+            writeLocal(`config.${key}`, value);
+            return value;
+        }
+        const saved = await requestJson(`/api/config/${encodeURIComponent(key)}`, {
+            method: "PUT",
+            body: value,
+        });
+        return saved || value;
+    }
+
+    async function savePastEvents(value) {
+        if (!apiReady()) {
+            writeLocal("pastEvents", value);
+            return value;
+        }
+
+        const saved = [];
+        for (const item of value) {
+            const id = item.id || item._id;
+            const path = id
+                ? `/api/events/past/${encodeURIComponent(id)}`
+                : "/api/events/past";
+            const method = id ? "PUT" : "POST";
+            saved.push(await requestJson(path, { method, body: item }));
+        }
+
+        await requestJson("/api/events/past/reorder", {
+            method: "PUT",
+            body: { ids: saved.map((item) => item.id || item._id).filter(Boolean) },
+        });
+        return saved;
+    }
+
+    async function saveActivities(value) {
+        if (!apiReady()) {
+            writeLocal("activities", value);
+            return value;
+        }
+        return value;
+    }
+
+    async function saveActivity(item) {
+        if (!apiReady()) {
+            const activities = readLocal("activities", defaults.activities);
+            const id = item.id || item._id || Date.now();
+            const next = { ...item, id };
+            const exists = activities.some(
+                (entry) => String(entry.id || entry._id) === String(id)
+            );
+            const updated = exists
+                ? activities.map((entry) =>
+                      String(entry.id || entry._id) === String(id) ? next : entry
+                  )
+                : [...activities, next];
+            writeLocal("activities", updated);
+            return next;
+        }
+
+        const id = item.id || item._id;
+        const saved = await requestJson(
+            id ? `/api/activities/${encodeURIComponent(id)}` : "/api/activities",
+            {
+                method: id ? "PUT" : "POST",
+                body: item,
+            }
+        );
+        return normalizeId(saved);
+    }
+
+    async function deleteActivity(id) {
+        if (!apiReady()) {
+            const activities = readLocal("activities", defaults.activities);
+            writeLocal(
+                "activities",
+                activities.filter((item) => String(item.id || item._id) !== String(id))
+            );
+            return true;
+        }
+        await requestJson(`/api/activities/${encodeURIComponent(id)}`, {
+            method: "DELETE",
+        });
+        return true;
+    }
+
+    async function saveAnnouncements(value) {
+        if (!apiReady()) {
+            writeLocal("announcements", value);
+            return value;
+        }
+        return value;
+    }
+
+    async function saveAnnouncement(item) {
+        if (!apiReady()) {
+            const announcements = readLocal("announcements", defaults.announcements);
+            const id = item.id || item._id || Date.now();
+            const next = { ...item, id };
+            const exists = announcements.some(
+                (entry) => String(entry.id || entry._id) === String(id)
+            );
+            const updated = exists
+                ? announcements.map((entry) =>
+                      String(entry.id || entry._id) === String(id) ? next : entry
+                  )
+                : [...announcements, next];
+            writeLocal("announcements", updated);
+            return next;
+        }
+
+        const id = item.id || item._id;
+        const saved = await requestJson(
+            id
+                ? `/api/announcements/${encodeURIComponent(id)}`
+                : "/api/announcements",
+            {
+                method: id ? "PUT" : "POST",
+                body: item,
+            }
+        );
+        return normalizeId(saved);
+    }
+
+    async function deleteAnnouncement(id) {
+        if (!apiReady()) {
+            const announcements = readLocal("announcements", defaults.announcements);
+            writeLocal(
+                "announcements",
+                announcements.filter(
+                    (item) => String(item.id || item._id) !== String(id)
+                )
+            );
+            return true;
+        }
+        await requestJson(`/api/announcements/${encodeURIComponent(id)}`, {
+            method: "DELETE",
+        });
+        return true;
+    }
+
+    async function uploadLeaderPhoto(name, file) {
+        const formData = new FormData();
+        formData.append("photo", file);
+
+        if (!apiReady()) {
+            const dataUrl = await fileToDataUrl(file);
+            localStorage.setItem(`hycora.leader.photo.${name}`, dataUrl);
+            return { url: dataUrl };
+        }
+
+        return requestJson(`/api/leaders/${encodeURIComponent(name)}/photo`, {
+            method: "POST",
+            body: formData,
+        });
+    }
+
+    async function deleteLeaderPhoto(name) {
+        if (!apiReady()) {
+            localStorage.removeItem(`hycora.leader.photo.${name}`);
+            return true;
+        }
+        await requestJson(`/api/leaders/${encodeURIComponent(name)}/photo`, {
+            method: "DELETE",
+        });
+        return true;
+    }
+
+    async function uploadActivityImages(activityId, files) {
+        const formData = new FormData();
+        Array.from(files || []).forEach((file) => formData.append("images", file));
+        return requestJson(`/api/activities/${encodeURIComponent(activityId)}/images`, {
+            method: "POST",
+            body: formData,
+        });
+    }
+
+    function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
     window.HYCorAData = {
         defaults,
         apiBase,
+        apiReady,
+        requestJson,
+        authToken,
         setApiBase(value) {
             localStorage.setItem(API_BASE_KEY, (value || "").trim());
         },
         getConfig,
-        saveConfig(key, value) {
-            writeLocal(`config.${key}`, value);
-        },
+        saveConfig,
         getPastEvents,
-        savePastEvents(value) {
-            writeLocal("pastEvents", value);
-        },
+        savePastEvents,
         getActivities,
-        saveActivities(value) {
-            writeLocal("activities", value);
-        },
+        getActivity,
+        saveActivities,
+        saveActivity,
+        deleteActivity,
         getAnnouncements,
-        saveAnnouncements(value) {
-            writeLocal("announcements", value);
-        },
+        getAnnouncement,
+        saveAnnouncements,
+        saveAnnouncement,
+        deleteAnnouncement,
+        uploadLeaderPhoto,
+        deleteLeaderPhoto,
+        uploadActivityImages,
         readLocal,
         clone,
     };
