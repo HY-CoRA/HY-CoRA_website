@@ -92,6 +92,141 @@
         });
 
         renderEvents();
+        initLeaderPhotos();
+
+        // 비밀번호 변경
+        const pwForm = document.getElementById("change-password-form");
+        const pwMsg = document.getElementById("change-password-msg");
+        if (pwForm) {
+            pwForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const current = pwForm.currentPassword.value;
+                const next = pwForm.newPassword.value;
+                const confirm = pwForm.confirmPassword.value;
+
+                pwMsg.hidden = false;
+                pwMsg.style.color = "#c0392b";
+
+                if (!current || !next) {
+                    pwMsg.textContent = "모든 항목을 입력해 주세요.";
+                    return;
+                }
+                if (next !== confirm) {
+                    pwMsg.textContent = "새 비밀번호가 일치하지 않습니다.";
+                    return;
+                }
+                if (next.length < 6) {
+                    pwMsg.textContent = "새 비밀번호는 6자 이상이어야 합니다.";
+                    return;
+                }
+
+                const result = await window.AdminAuth.changePassword(current, next);
+                if (result.success) {
+                    pwMsg.style.color = "#177a3c";
+                    pwMsg.textContent = "비밀번호가 변경되었습니다.";
+                    pwForm.reset();
+                } else {
+                    pwMsg.textContent = result.message;
+                }
+            });
+        }
+    }
+
+    async function initLeaderPhotos() {
+        const grid = document.getElementById("leader-photos-grid");
+        if (!grid) return;
+
+        let names = [];
+        try {
+            const res = await fetch("../about.html");
+            const html = await res.text();
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            names = [...doc.querySelectorAll(".avatar[data-leader-name]")]
+                .map((el) => el.dataset.leaderName)
+                .filter(Boolean);
+        } catch {
+            grid.innerHTML = "<p>임원진 정보를 불러올 수 없습니다.</p>";
+            return;
+        }
+
+        if (names.length === 0) {
+            grid.innerHTML = "<p>등록된 임원진이 없습니다.</p>";
+            return;
+        }
+
+        names.forEach((name) => {
+            const saved = localStorage.getItem(`hycora.leader.photo.${name}`);
+
+            const card = document.createElement("div");
+            card.className = "admin-leader-photo-card";
+
+            const preview = document.createElement("div");
+            preview.className = "admin-leader-preview";
+            if (saved) {
+                const img = document.createElement("img");
+                img.src = saved;
+                img.alt = name;
+                preview.appendChild(img);
+            }
+
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*";
+            fileInput.style.display = "none";
+
+            const nameLabel = document.createElement("div");
+            nameLabel.className = "admin-leader-name";
+            nameLabel.textContent = name;
+
+            const uploadBtn = document.createElement("button");
+            uploadBtn.type = "button";
+            uploadBtn.className = "admin-btn";
+            uploadBtn.textContent = "사진 업로드";
+            uploadBtn.addEventListener("click", () => fileInput.click());
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "admin-btn admin-btn-danger";
+            deleteBtn.textContent = "사진 삭제";
+            deleteBtn.disabled = !saved;
+            deleteBtn.addEventListener("click", () => {
+                if (!confirm(`${name}의 사진을 삭제할까요?`)) return;
+                localStorage.removeItem(`hycora.leader.photo.${name}`);
+                preview.innerHTML = "";
+                deleteBtn.disabled = true;
+                toast(`${name} 사진이 삭제되었습니다.`);
+            });
+
+            fileInput.addEventListener("change", () => {
+                const file = fileInput.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const dataUrl = e.target.result;
+                    localStorage.setItem(`hycora.leader.photo.${name}`, dataUrl);
+                    preview.innerHTML = "";
+                    const img = document.createElement("img");
+                    img.src = dataUrl;
+                    img.alt = name;
+                    preview.appendChild(img);
+                    deleteBtn.disabled = false;
+                    toast(`${name} 사진이 저장되었습니다.`);
+                };
+                reader.readAsDataURL(file);
+                fileInput.value = "";
+            });
+
+            const btnRow = document.createElement("div");
+            btnRow.className = "admin-leader-btn-row";
+            btnRow.appendChild(uploadBtn);
+            btnRow.appendChild(deleteBtn);
+
+            card.appendChild(fileInput);
+            card.appendChild(preview);
+            card.appendChild(nameLabel);
+            card.appendChild(btnRow);
+            grid.appendChild(card);
+        });
     }
 
     async function initActivityList() {
@@ -207,14 +342,8 @@
 
     async function initApplyLinks() {
         const form = document.getElementById("apply-form");
-        const schedule = await data.getConfig("recruitment-schedule");
         const links = await data.getConfig("apply-links");
 
-        form.year.value = schedule.year || new Date().getFullYear();
-        form.s1Start.value = schedule.semester1?.regularStart || "";
-        form.s1End.value = schedule.semester1?.regularEnd || "";
-        form.s2Start.value = schedule.semester2?.regularStart || "";
-        form.s2End.value = schedule.semester2?.regularEnd || "";
         form.newUrl.value = links.newMember?.url || "";
         form.newLabel.value = links.newMember?.label || "신규 지원하기";
         form.returningUrl.value = links.returning?.url || "";
@@ -222,19 +351,6 @@
 
         form.addEventListener("submit", (event) => {
             event.preventDefault();
-            data.saveConfig("recruitment-schedule", {
-                year: Number(form.year.value),
-                semester1: {
-                    regularStart: form.s1Start.value || null,
-                    regularEnd: form.s1End.value || null,
-                    reregistrationDate: "02.15",
-                },
-                semester2: {
-                    regularStart: form.s2Start.value || null,
-                    regularEnd: form.s2End.value || null,
-                    reregistrationDate: "08.15",
-                },
-            });
             data.saveConfig("apply-links", {
                 newMember: {
                     url: form.newUrl.value.trim(),

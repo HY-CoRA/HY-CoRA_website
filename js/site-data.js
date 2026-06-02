@@ -12,19 +12,6 @@
                 imageUrl: "images/index-background2.jpg",
                 altText: "HY-CoRA 소개 페이지 배너",
             },
-            "recruitment-schedule": {
-                year: 2026,
-                semester1: {
-                    regularStart: null,
-                    regularEnd: null,
-                    reregistrationDate: "02.15",
-                },
-                semester2: {
-                    regularStart: null,
-                    regularEnd: null,
-                    reregistrationDate: "08.15",
-                },
-            },
             "apply-links": {
                 newMember: {
                     url: "https://forms.gle/Vghs8HVJj976smZDA",

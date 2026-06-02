@@ -45,18 +45,33 @@ function renderLeaderPhotos() {
         const avatar = card.querySelector(".avatar");
         if (!name || !avatar) return;
 
-        const img = document.createElement("img");
-        img.className = "avatar-img";
-        img.alt = name;
-        img.src = apiBase
-            ? `${apiBase}/uploads/leaders/${encodeURIComponent(name)}.jpg`
-            : `uploads/leaders/${encodeURIComponent(name)}.jpg`;
-        img.onerror = () => {
-            img.remove();
-            avatar.classList.add("avatar-fallback");
-        };
-
-        avatar.innerHTML = "";
-        avatar.appendChild(img);
+        // localStorage에서 저장된 사진 우선 로드
+        const saved = localStorage.getItem(`hycora.leader.photo.${name}`);
+        if (saved) {
+            setAvatarImage(avatar, name, saved);
+        } else {
+            const img = document.createElement("img");
+            img.className = "avatar-img";
+            img.alt = name;
+            img.src = apiBase
+                ? `${apiBase}/uploads/leaders/${encodeURIComponent(name)}.jpg`
+                : `uploads/leaders/${encodeURIComponent(name)}.jpg`;
+            img.onerror = () => {
+                img.remove();
+                avatar.classList.add("avatar-fallback");
+            };
+            avatar.innerHTML = "";
+            avatar.appendChild(img);
+        }
     });
+}
+
+function setAvatarImage(avatar, name, dataUrl) {
+    avatar.classList.remove("avatar-fallback");
+    const img = document.createElement("img");
+    img.className = "avatar-img";
+    img.alt = name;
+    img.src = dataUrl;
+    avatar.innerHTML = "";
+    avatar.appendChild(img);
 }

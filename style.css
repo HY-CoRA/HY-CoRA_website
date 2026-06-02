@@ -481,6 +481,189 @@ body {
     font-size: 0.9rem;
 }
 
+.contributors-timeline {
+    position: relative;
+    width: min(760px, 100%);
+    min-height: 310px;
+    margin: 30px auto 80px;
+    padding: 38px 0 24px;
+    box-sizing: border-box;
+}
+
+.contributors-axis {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    transform: translateX(-50%);
+    background: #075bbb;
+    border-radius: 999px;
+}
+
+.contributors-axis::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, 50%);
+    border: 3px solid #075bbb;
+    border-radius: 50%;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.contributors-badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 82px;
+    height: 82px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -12px);
+    border-radius: 50%;
+    background: #2470c7;
+    border: 4px solid #8bb7ea;
+    box-shadow: inset 0 0 0 2px #ffffff, 0 8px 18px rgba(7, 91, 187, 0.25);
+    color: #ffffff;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.contributor-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 190px;
+    padding-top: 105px;
+}
+
+.contributor-item::before {
+    content: "";
+    position: absolute;
+    top: 132px;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -50%);
+    border: 3px solid #075bbb;
+    border-radius: 50%;
+    background: #ffffff;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.contributor-card {
+    width: min(270px, calc(100% - 56px));
+}
+
+.contributor-left .contributor-card {
+    grid-column: 1;
+    justify-self: end;
+    padding-right: 46px;
+    text-align: right;
+}
+
+.contributor-right .contributor-card {
+    grid-column: 2;
+    justify-self: start;
+    padding-left: 46px;
+    text-align: left;
+}
+
+.contributor-year {
+    color: #075bbb;
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.contributor-meta {
+    margin-top: 8px;
+    color: #333333;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.contributor-card dl {
+    margin: 14px 0 0;
+    display: grid;
+    gap: 8px;
+}
+
+.contributor-card dl div {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 8px;
+}
+
+.contributor-left .contributor-card dl div {
+    grid-template-columns: 1fr 42px;
+}
+
+.contributor-card dt {
+    color: #075bbb;
+    font-weight: 800;
+}
+
+.contributor-left .contributor-card dt {
+    grid-column: 2;
+}
+
+.contributor-left .contributor-card dd {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.contributor-card dd {
+    margin: 0;
+    color: #222222;
+    line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+    .contributors-axis {
+        left: 32px;
+    }
+
+    .contributors-badge {
+        left: 32px;
+    }
+
+    .contributor-item {
+        display: block;
+        padding-left: 78px;
+    }
+
+    .contributor-item::before {
+        left: 32px;
+    }
+
+    .contributor-left .contributor-card,
+    .contributor-right .contributor-card {
+        width: 100%;
+        padding-right: 0;
+        padding-left: 0;
+        text-align: left;
+    }
+
+    .contributor-left .contributor-card dl div {
+        grid-template-columns: 42px 1fr;
+    }
+
+    .contributor-left .contributor-card dt {
+        grid-column: 1;
+    }
+
+    .contributor-left .contributor-card dd {
+        grid-column: 2;
+    }
+}
+
 /* Design #06에서 수정 */
 
 /* Activities Section */
@@ -2094,6 +2277,188 @@ strong {
 .admin-toast.show {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* 임원진 사진 관리 (Admin) */
+.admin-leader-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.admin-leader-photo-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 14px;
+    background: #fff;
+    border: 1px solid #d9e1f2;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(23, 32, 51, 0.07);
+}
+
+.admin-leader-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #5fd35f;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.admin-leader-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.admin-leader-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #172033;
+}
+
+.admin-leader-btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.admin-btn {
+    border: 0;
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: #174ea6;
+    color: #fff;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+}
+
+.admin-btn:disabled {
+    background: #c5cde0;
+    cursor: default;
+}
+
+.admin-btn-danger {
+    background: #c0392b;
+}
+
+.admin-btn-danger:disabled {
+    background: #c5cde0;
+}
+
+/* 관리자 로그인 오버레이 */
+#admin-login-overlay {
+    position: fixed;
+    inset: 0;
+    background: #f0f4fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.admin-login-box {
+    background: #fff;
+    border: 1px solid #d9e1f2;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(23, 32, 51, 0.13);
+    padding: 40px 36px 36px;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-login-logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #075bbb;
+    text-align: center;
+    letter-spacing: -0.02em;
+}
+
+.admin-login-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #172033;
+    text-align: center;
+}
+
+.admin-login-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.admin-login-label input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c9d3e6;
+    border-radius: 8px;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 1rem;
+    transition: border-color 0.15s;
+}
+
+.admin-login-label input:focus {
+    outline: none;
+    border-color: #075bbb;
+    box-shadow: 0 0 0 3px rgba(7, 91, 187, 0.12);
+}
+
+.admin-login-error {
+    font-size: 0.85rem;
+    color: #c0392b;
+    text-align: center;
+}
+
+.admin-login-btn {
+    width: 100%;
+    padding: 12px;
+    background: #174ea6;
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.admin-login-btn:hover {
+    background: #0f3a80;
+}
+
+@keyframes admin-shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-6px); }
+    40%       { transform: translateX(6px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
+}
+
+.admin-login-shake {
+    animation: admin-shake 0.45s ease;
+}
+
+.admin-logout-btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
 }
 
 .empty-message {

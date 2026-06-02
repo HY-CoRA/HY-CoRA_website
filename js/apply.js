@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     setupSectionNav();
     setupInlineLinks();
-    await renderRecruitmentSchedule();
+    renderRecruitmentSchedule();
     await renderApplyLinks();
 });
 
@@ -39,33 +39,31 @@ function scrollToId(targetId) {
     });
 }
 
-async function renderRecruitmentSchedule() {
-    const schedule = await window.HYCorAData.getConfig("recruitment-schedule");
-    const card = document.querySelector(".recruitment-card");
-    if (!card || !schedule) return;
+function getCurrentSemester() {
+    const now = new Date();
+    const m = now.getMonth() + 1;
+    const d = now.getDate();
+    // 1학기: 3/1 ~ 8/30
+    if (m >= 3 && (m < 8 || (m === 8 && d <= 30))) return "semester1";
+    // 2학기: 9/1 ~ 2/말일
+    if (m >= 9 || m <= 2) return "semester2";
+    return null; // 8/31 공백일
+}
 
-    const year = Number(schedule.year) || new Date().getFullYear();
-    const semester1 = schedule.semester1 || {};
-    const semester2 = schedule.semester2 || {};
+function renderRecruitmentSchedule() {
+    const card = document.querySelector(".recruitment-card");
+    if (!card) return;
+
+    const year = new Date().getFullYear();
+    const nextYear = year + 1;
+    const febLastDay = new Date(nextYear, 2, 0).getDate(); // 윤년 자동 처리
 
     card.innerHTML = '<div class="recruitment-line"></div>';
     [
-        {
-            label: "1학기 정규 모집",
-            text: formatRegular(semester1.regularStart, semester1.regularEnd),
-        },
-        {
-            label: "재등록 기간 (1학기)",
-            text: `${year}.${semester1.reregistrationDate || "02.15"}`,
-        },
-        {
-            label: "2학기 정규 모집",
-            text: formatRegular(semester2.regularStart, semester2.regularEnd),
-        },
-        {
-            label: "재등록 기간 (2학기)",
-            text: `${year}.${semester2.reregistrationDate || "08.15"}`,
-        },
+        { label: "1학기 정규 모집",    text: `${year}.3.1 ~ ${year}.8.30` },
+        { label: "재등록 기간 (1학기)", text: `${year}.2.15` },
+        { label: "2학기 정규 모집",    text: `${year}.9.1 ~ ${nextYear}.2.${febLastDay}` },
+        { label: "재등록 기간 (2학기)", text: `${year}.8.15` },
     ].forEach((item) => {
         const box = document.createElement("div");
         box.className = "recruitment-box";
@@ -74,32 +72,24 @@ async function renderRecruitmentSchedule() {
     });
 }
 
-function formatRegular(start, end) {
-    if (!start && !end) return "미정 (일정에 따라 달라질 수 있음)";
-    if (start && end) return `${formatDate(start)} ~ ${formatDate(end)}`;
-    return formatDate(start || end);
-}
-
-function formatDate(value) {
-    return String(value || "").replaceAll("-", ".");
-}
-
 async function renderApplyLinks() {
     const links = await window.HYCorAData.getConfig("apply-links");
     const box = document.querySelector(".apply-box");
-    if (!box || !links) return;
+    if (!box) return;
+
+    const isOpen = getCurrentSemester() !== null;
 
     box.innerHTML = "";
     [
         {
             title: "신규 지원",
             desc: "처음 HY-CoRA에 지원하는 분들을 위한 신청 경로입니다.",
-            link: links.newMember || {},
+            link: links?.newMember || {},
         },
         {
             title: "재가입",
             desc: "이전 활동 이력이 있는 부원을 위한 재가입 신청 경로입니다.",
-            link: links.returning || {},
+            link: links?.returning || {},
         },
     ].forEach((item, index) => {
         const row = document.createElement("div");
@@ -118,12 +108,12 @@ async function renderApplyLinks() {
 
         const button = document.createElement("a");
         button.className = "apply-button";
-        button.textContent = item.link.label || "지원하기";
 
-        if (item.link.url) {
+        if (isOpen && item.link.url) {
             button.href = item.link.url;
             button.target = "_blank";
             button.rel = "noopener";
+            button.textContent = item.link.label || "지원하기";
         } else {
             button.classList.add("disabled");
             button.removeAttribute("href");

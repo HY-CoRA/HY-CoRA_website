@@ -31,8 +31,25 @@
       <button type="button" id="add-past-event">이벤트 추가</button>
       <button type="button" id="save-past-events">저장</button>
     </section>
+
+    <section class="admin-panel">
+      <h2>임원진 사진 관리</h2>
+      <div id="leader-photos-grid" class="admin-leader-grid"></div>
+    </section>
+
+    <section class="admin-panel">
+      <h2>비밀번호 변경</h2>
+      <form id="change-password-form" class="admin-form">
+        <label>현재 비밀번호<input type="password" name="currentPassword" autocomplete="current-password" /></label>
+        <label>새 비밀번호<input type="password" name="newPassword" autocomplete="new-password" /></label>
+        <label>새 비밀번호 확인<input type="password" name="confirmPassword" autocomplete="new-password" /></label>
+        <div id="change-password-msg" hidden></div>
+        <button type="submit">변경</button>
+      </form>
+    </section>
   </main>
   <script src="../js/site-data.js"></script>
+  <script src="auth.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
