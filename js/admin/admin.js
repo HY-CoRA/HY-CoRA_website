@@ -144,7 +144,7 @@
 
         let names = [];
         try {
-            const res = await fetch("../about.html");
+            const res = await fetch("../general/about.html");
             const html = await res.text();
             const doc = new DOMParser().parseFromString(html, "text/html");
             names = [...doc.querySelectorAll(".avatar[data-leader-name]")]

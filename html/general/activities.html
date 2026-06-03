@@ -4,9 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1024" />
-  <title>HY-CoRA - 공지사항</title>
+  <meta name="description"
+    content="HY-CoRA의 다채로운 활동을 소개합니다. 정규 스터디, MT, asv(안산사이언스벨리) 부스 활동, 선배와의 네트워킹 데이, 코라코라 열공단 등 선배, 동기, 후배와 함께하는 즐거운 동아리 활동을 확인해보세요." />
+  <meta name="keywords" content="동아리 활동, 코라코라 열공단, 자율 스터디, MT, 네트워킹, 코딩 프로젝트" />
+  <title>HY-CoRA - 활동내용</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="../../css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet" />
 </head>
 
@@ -29,39 +32,29 @@
     <!-- 상단 소개 배너 -->
     <div class="top-header">
       <div class="top-title">
-        <h2>공지사항</h2>
+        <h2>활동내용</h2>
       </div>
       <div class="top-subtitle">
-        <p>동아리의 최신 소식과 중요한 공지사항을 확인하세요.</p>
+        <p>
+          다양한 스터디, 프로젝트, 봉사활동, 친목활동을 통해 함께 성장하고
+          있습니다.
+        </p>
       </div>
     </div>
 
-    <section class="notices-section">
+    <section class="activities-section">
       <div class="container">
-        <div class="notices-nav">
-          <button class="nav-button active" data-filter="전체">전체</button>
-          <button class="nav-button" data-filter="행사">행사</button>
-          <button class="nav-button" data-filter="모집">모집</button>
-          <button class="nav-button" data-filter="기타">기타</button>
-        </div>
-        <div class="notices-sort">
-          <button class="sort-button" data-sort="asc">오랜된순</button>
-          <button class="sort-button active" data-sort="desc">최신순</button>
+        <div class="activities-nav">
+          <button class="nav-button active">전체</button>
+          <button class="nav-button">모집중</button>
+          <button class="nav-button">진행중</button>
+          <button class="nav-button">예정</button>
+          <button class="nav-button">완료</button>
         </div>
 
-        <table class="notices-table">
-          <thead>
-            <tr>
-              <th>제목</th>
-              <th>내용</th>
-              <th>일자</th>
-              <th>분류</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-
-        <!-- ✅ 이게 반드시 있어야 버튼이 보임 -->
+        <div class="activities-container">
+          <!-- JS가 activity-card들을 자동으로 채워 넣음 -->
+        </div>
         <div id="pagination" class="pagination"></div>
       </div>
     </section>
@@ -103,10 +96,9 @@
     </div>
   </footer>
 
-  <!-- 목록 스크립트 -->
-  <script src="js/site-data.js"></script>
-  <script src="js/announcement.js"></script>
-  <script src="js/nav.js"></script>
+  <script src="../../js/site-data.js"></script>
+  <script src="../../js/activities.js"></script>
+  <script src="../../js/nav.js"></script>
 </body>
 
 </html>

@@ -55,7 +55,7 @@ function renderLeaderPhotos() {
             img.alt = name;
             img.src = apiBase
                 ? `${apiBase}/uploads/leaders/${encodeURIComponent(name)}.jpg`
-                : `uploads/leaders/${encodeURIComponent(name)}.jpg`;
+                : `/uploads/leaders/${encodeURIComponent(name)}.jpg`;
             img.onerror = () => {
                 img.remove();
                 avatar.classList.add("avatar-fallback");

@@ -5,11 +5,11 @@
     const defaults = {
         configs: {
             "main-banner": {
-                imageUrl: "images/index-background1.jpg",
+                imageUrl: "/images/index-background1.jpg",
                 altText: "HY-CoRA 메인 배너",
             },
             "about-banner": {
-                imageUrl: "images/index-background2.jpg",
+                imageUrl: "/images/index-background2.jpg",
                 altText: "HY-CoRA 소개 페이지 배너",
             },
             "apply-links": {
@@ -26,21 +26,21 @@
         pastEvents: [
             {
                 id: 1,
-                imageUrl: "images/mentoring.jpg",
+                imageUrl: "/images/mentoring.jpg",
                 title: "Event 1. 멘토링",
                 description:
                     "다양한 코딩 강좌를 통해 멘토의 수업을 듣고 실력을 향상시킵니다.",
             },
             {
                 id: 2,
-                imageUrl: "images/field_trip.jpg",
+                imageUrl: "/images/field_trip.jpg",
                 title: "Event 2. 회사(exam) 견학",
                 description:
                     "다양한 부서를 둘러보며 회사의 업무환경과 문화를 직접 체험합니다.",
             },
             {
                 id: 3,
-                imageUrl: "images/mt.jpg",
+                imageUrl: "/images/mt.jpg",
                 title: "Event 3. 엠티(MT)",
                 description: "팀워크를 다지고 친목을 쌓는 단체활동 시간입니다.",
             },
@@ -163,6 +163,49 @@
         return Boolean(apiBase());
     }
 
+    function normalizeAssetUrl(value) {
+        const url = String(value || "").trim();
+        if (!url) return url;
+        if (/^(https?:|data:|blob:|#)/i.test(url)) return url;
+        if (url.startsWith("/")) return url;
+        if (url.startsWith("../../images/")) return url.replace("../..", "");
+        if (url.startsWith("../images/")) return url.replace("..", "");
+        if (url.startsWith("images/")) return `/${url}`;
+        if (url.startsWith("../../uploads/")) return url.replace("../..", "");
+        if (url.startsWith("../uploads/")) return url.replace("..", "");
+        if (url.startsWith("uploads/")) return `/${url}`;
+        return url;
+    }
+
+    function normalizeConfigValue(value) {
+        if (!value || typeof value !== "object") return value;
+        if (!("imageUrl" in value)) return value;
+        return {
+            ...value,
+            imageUrl: normalizeAssetUrl(value.imageUrl),
+        };
+    }
+
+    function normalizePastEvent(item) {
+        return {
+            ...item,
+            imageUrl: normalizeAssetUrl(item?.imageUrl),
+        };
+    }
+
+    function normalizeActivityAssets(item) {
+        if (!item || typeof item !== "object") return item;
+        return {
+            ...item,
+            imageUrl: normalizeAssetUrl(item.imageUrl),
+            mentorImg: normalizeAssetUrl(item.mentorImg),
+            avatarUrl: normalizeAssetUrl(item.avatarUrl),
+            images: Array.isArray(item.images)
+                ? item.images.map(normalizeAssetUrl)
+                : item.images,
+        };
+    }
+
     function normalizeId(item, fallback) {
         if (!item || typeof item !== "object") return item;
         return {
@@ -235,28 +278,33 @@
     async function getConfig(key) {
         const local = readLocal(`config.${key}`, defaults.configs[key] || null);
         const api = await fetchJson(`/api/config/${key}`);
-        return api || local;
+        return normalizeConfigValue(api || local);
     }
 
     async function getPastEvents() {
         const local = readLocal("pastEvents", defaults.pastEvents);
         const api = await fetchJson("/api/events/past");
-        return Array.isArray(api) ? api : local;
+        const items = Array.isArray(api) ? api : local;
+        return items.map(normalizePastEvent);
     }
 
     async function getActivities() {
         const local = readLocal("activities", defaults.activities);
         const api = await fetchJson("/api/activities");
-        return Array.isArray(api) ? normalizeList(api) : local;
+        const items = Array.isArray(api) ? normalizeList(api) : local;
+        return items.map(normalizeActivityAssets);
     }
 
     async function getActivity(id) {
         const local = readLocal("activities", defaults.activities);
         if (apiReady() && id) {
             const api = await fetchJson(`/api/activities/${encodeURIComponent(id)}`);
-            if (api) return normalizeId(api);
+            if (api) return normalizeActivityAssets(normalizeId(api));
         }
-        return local.find((item) => String(item.id || item._id) === String(id)) || null;
+        const item =
+            local.find((entry) => String(entry.id || entry._id) === String(id)) ||
+            null;
+        return normalizeActivityAssets(item);
     }
 
     async function getAnnouncements(includeDrafts) {

@@ -1,9 +1,21 @@
 document.addEventListener("DOMContentLoaded", async () => {
     setupSectionNav();
     setupInlineLinks();
+    setupFaqToggle();
     renderRecruitmentSchedule();
     await renderApplyLinks();
 });
+
+function setupFaqToggle() {
+    document.querySelectorAll(".FAQ-card .faq-question").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const card = btn.closest(".FAQ-card");
+            const isOpen = card.classList.contains("open");
+            card.classList.toggle("open", !isOpen);
+            btn.setAttribute("aria-expanded", String(!isOpen));
+        });
+    });
+}
 
 function setupSectionNav() {
     const navButtons = document.querySelectorAll(".about-nav .nav-button");

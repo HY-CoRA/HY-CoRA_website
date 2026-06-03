@@ -116,7 +116,7 @@ body {
     position: absolute;
     inset: 0;
     /* top/right/bottom/left: 0 */
-    background: url('images/index-background1.jpg') center / cover no-repeat;
+    background: url('../images/index-background1.jpg') center / cover no-repeat;
     filter: blur(6px);
     transform: scale(1.05);
     /* 블러 가장자리 비치는 거 방지용 살짝 확대 */
@@ -183,7 +183,7 @@ body {
 }
 
 .intro-image-placeholder.is-empty {
-    background: url('images/index-background1.jpg') center / cover no-repeat;
+    background: url('../images/index-background1.jpg') center / cover no-repeat;
 }
 
 /* About Section */
@@ -425,7 +425,7 @@ body {
     margin: 40px auto 80px;
     background: #e1e6f6;
     border-radius: 44px;
-    padding: 56px 48px;
+    padding: 24px;
     /* 좌우/상하 여백 */
     box-sizing: border-box;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -985,14 +985,61 @@ body {
 }
 
 .FAQ-card {
-    position: relative;
     background: #ffffff;
     border-radius: 15px;
-    padding: 28px 32px;
+    padding: 15px 20px;
     text-align: left;
-    width: 85%;
-    margin: 0 auto;
-    margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.FAQ-card:last-child {
+    margin-bottom: 0;
+}
+
+.faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    gap: 12px;
+}
+
+.faq-arrow {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+.FAQ-card.open .faq-arrow {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+}
+
+.FAQ-card.open .faq-answer {
+    max-height: 300px;
+}
+
+.faq-answer p {
+    margin: 10px 0 2px;
+    font-size: 1rem;
+    color: #444444;
 }
 
 /*Desing-11 지원자격부분 추가*/
@@ -1293,7 +1340,7 @@ strong {
     position: absolute;
     inset: 0;
     /* top/right/bottom/left: 0 */
-    background: url('images/index-background2.jpg') center / cover no-repeat;
+    background: url('../images/index-background2.jpg') center / cover no-repeat;
     filter: blur(6px);
     transform: scale(1.05);
     /* 블러 가장자리 비치는 거 방지용 살짝 확대 */
