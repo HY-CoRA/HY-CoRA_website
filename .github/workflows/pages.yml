@@ -1,0 +1,122 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Pages artifact
+        run: |
+          set -eu
+          rm -rf _site
+          mkdir -p _site
+
+          cp -R CNAME SPEC.md css html images js robot.txt.txt sitemap.xml _site/
+          [ -f .nojekyll ] && cp .nojekyll _site/.nojekyll || touch _site/.nojekyll
+
+          create_redirect() {
+            file="$1"
+            target="$2"
+            title="$3"
+            mkdir -p "$(dirname "_site/$file")"
+            cat > "_site/$file" <<EOF
+          <!doctype html>
+          <html lang="ko">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <meta http-equiv="refresh" content="0; url=$target" />
+            <title>$title</title>
+            <link rel="canonical" href="$target" />
+          </head>
+          <body>
+            <script>location.replace("$target" + location.search + location.hash);</script>
+            <a href="$target">이동</a>
+          </body>
+          </html>
+          EOF
+          }
+
+          create_redirect "index.html" "html/general/index.html" "HY-CoRA"
+          create_redirect "about.html" "html/general/about.html" "HY-CoRA - 소개"
+          create_redirect "activities.html" "html/general/activities.html" "HY-CoRA - 활동내용"
+          create_redirect "activities_detail.html" "html/general/activities_detail.html" "HY-CoRA - 활동상세"
+          create_redirect "apply.html" "html/general/apply.html" "HY-CoRA - 모집안내"
+          create_redirect "announcement.html" "html/general/announcement.html" "HY-CoRA - 공지사항"
+          create_redirect "announcement_detail.html" "html/general/announcement_detail.html" "HY-CoRA - 공지상세"
+          create_redirect "announcement_etc_detail.html" "html/general/announcement_etc_detail.html" "HY-CoRA - 공지상세"
+          create_redirect "announcement_notice_detail.html" "html/general/announcement_notice_detail.html" "HY-CoRA - 공지상세"
+          create_redirect "announcement_recruitment_detail.html" "html/general/announcement_recruitment_detail.html" "HY-CoRA - 모집상세"
+          create_redirect "notice-detail.html" "html/general/notice-detail.html" "HY-CoRA - 공지상세"
+
+          create_redirect "admin/index.html" "../html/admin/index.html" "HY-CoRA Admin"
+          create_redirect "admin/site-content.html" "../html/admin/site-content.html" "HY-CoRA Admin"
+          create_redirect "admin/activity-list.html" "../html/admin/activity-list.html" "HY-CoRA Admin"
+          create_redirect "admin/activity-form.html" "../html/admin/activity-form.html" "HY-CoRA Admin"
+          create_redirect "admin/apply-links.html" "../html/admin/apply-links.html" "HY-CoRA Admin"
+          create_redirect "admin/announcement-list.html" "../html/admin/announcement-list.html" "HY-CoRA Admin"
+          create_redirect "admin/announcement-form.html" "../html/admin/announcement-form.html" "HY-CoRA Admin"
+
+          cat > _site/404.html <<'EOF'
+          <!doctype html>
+          <html lang="ko">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>HY-CoRA - 404</title>
+          </head>
+          <body>
+            <script>
+              const redirects = {
+                "/": "/html/general/index.html",
+                "/index.html": "/html/general/index.html",
+                "/about.html": "/html/general/about.html",
+                "/activities.html": "/html/general/activities.html",
+                "/activities_detail.html": "/html/general/activities_detail.html",
+                "/apply.html": "/html/general/apply.html",
+                "/announcement.html": "/html/general/announcement.html",
+                "/announcement_detail.html": "/html/general/announcement_detail.html",
+                "/announcement_etc_detail.html": "/html/general/announcement_etc_detail.html",
+                "/announcement_notice_detail.html": "/html/general/announcement_notice_detail.html",
+                "/announcement_recruitment_detail.html": "/html/general/announcement_recruitment_detail.html",
+                "/notice-detail.html": "/html/general/notice-detail.html"
+              };
+              const target = redirects[location.pathname] || "/html/general/404.html";
+              location.replace(target + location.search + location.hash);
+            </script>
+            <a href="/html/general/index.html">HY-CoRA 홈으로 이동</a>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
