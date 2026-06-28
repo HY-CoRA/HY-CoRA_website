@@ -38,58 +38,69 @@
             </div>
         </div>
 
-        <section class="info-section">
-            <!-- ✅ 행사 사진 갤러리 (JS가 이 .info-card 안에 썸네일 주입) -->
-            <div class="info-box gallery">
-                <h2>행사 사진</h2>
-                <div class="info-card"></div>
-            </div>
-
-            <!-- ✅ 이하 3개 박스는 .info-grid 안에서 1)소개 2)일정 3)담당자 순서 -->
-            <div class="info-grid">
-
-                <!-- 1) 활동소개 -->
-                <div class="info-box">
-                    <h2>활동소개</h2>
-                    <div class="info-card">
-                        <p>웹 개발 스터디는 웹 개발 기초부터 ~~~.</p>
-                        <div class="info-subgrid">
+        <section class="notices-section activity-detail-section">
+            <div class="notice-detail-card activity-detail-card">
+                <div class="notice-detail-pills activity-detail-meta" aria-label="활동 기본 정보">
+                    <div class="notice-detail-pill">
+                        <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+                        <div>
+                            <span class="activity-meta-label">기간</span>
+                            <span class="notice-detail-pill-text" data-activity-period>미정</span>
+                        </div>
+                    </div>
+                    <div class="notice-detail-pill">
+                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                        <div>
+                            <span class="activity-meta-label">장소</span>
+                            <span class="notice-detail-pill-text" data-activity-place>미정</span>
+                        </div>
+                    </div>
+                    <div class="notice-detail-pill">
+                        <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
+                        <div>
+                            <span class="activity-meta-label">상태</span>
+                            <span class="notice-detail-pill-text" data-activity-status>예정</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 2) 진행일정 -->
-            <div class="info-box">
-                <h2>진행일정</h2>
-                <div class="info-card">
-                    <ol class="custom-list">
-                        <li>OT 스터디 목표 및 진행 방식 소개</li>
-                        <li>OT 스터디 목표 및 진행 방식 소개</li>
-                        <li>OT 스터디 목표 및 진행 방식 소개</li>
-                        <li>OT 스터디 목표 및 진행 방식 소개</li>
-                    </ol>
+                <div class="notice-detail-body">
+                    <article class="notice-paper activity-paper" aria-label="활동 상세 내용">
+                        <div class="info-box gallery">
+                            <h2>행사 사진</h2>
+                            <div class="info-card"></div>
+                        </div>
+
+                        <div class="info-box">
+                            <h2>활동소개</h2>
+                            <div class="info-card">
+                                <p>활동 소개가 없습니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <h2>진행일정</h2>
+                            <div class="info-card">
+                                <ol class="custom-list"></ol>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <h2>담당자 정보</h2>
+                            <div class="info-card contact-card">
+                                <div class="contact-flex">
+                                    <div class="avatar-mentor" aria-hidden="true"></div>
+                                    <div class="avatar-1">
+                                        <p><strong>담당자 정보 미등록</strong></p>
+                                        <p></p>
+                                        <p>연락처 미등록</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </div>
-
-            <!-- 3) 담당자 정보 -->
-            <div class="info-box">
-                <h2>담당자 정보</h2>
-                <div class="info-card contact-card">
-                    <div class="contact-flex">
-                        <div class="avatar-mentor">
-                            <img src="../../images/detail-icon.png" alt="프로필">
-                        </div>
-                        <div class="avatar-1">
-                            <p><strong>이름</strong></p>
-                            <p>역할</p>
-                            <p>연락처</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            </div><!-- /.info-grid -->
         </section>
     </main>
 

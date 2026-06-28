@@ -39,6 +39,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             .filter(Boolean)
             .join(" · ");
 
+    const periodEl = q("[data-activity-period]");
+    const placeEl = q("[data-activity-place]");
+    const statusEl = q("[data-activity-status]");
+    if (periodEl)
+        periodEl.textContent =
+            data.status === "scheduled"
+                ? "미정"
+                : data.periodText || data.date || "미정";
+    if (placeEl) placeEl.textContent = data.place || "미정";
+    if (statusEl)
+        statusEl.textContent =
+            data.statusLabel ||
+            ({ scheduled: "예정", ongoing: "진행 중", completed: "종료", done: "종료" }[
+                data.status
+            ] || "미정");
+
     // === 활동소개: intro 우선, 없으면 desc ===
     const secIntro = byH2("활동소개") || byH2("활동 소개");
     if (secIntro) {
@@ -157,6 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (galleryCard) {
         galleryCard.innerHTML = "";
+        const galleryBox = galleryCard.closest(".info-box.gallery");
         if (imgs.length) {
             const cover = document.createElement("img");
             cover.className = "event-cover";
@@ -166,7 +183,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             cover.style.display = "block";
             cover.style.objectFit = "cover";
             galleryCard.appendChild(cover);
+            if (galleryBox) galleryBox.hidden = false;
+        } else if (galleryBox) {
+            galleryBox.hidden = true;
         }
-        // 이미지가 없으면 비워둠 (요청대로)
     }
 });
