@@ -151,8 +151,16 @@
         localStorage.setItem(storageKey(name), JSON.stringify(value));
     }
 
+    function defaultApiBase() {
+        const host = location.hostname;
+        if (host === "localhost" || host === "127.0.0.1") return "http://localhost:8080";
+        if (host === "hycora.co.kr") return "https://api.hycora.co.kr";
+        return "";
+    }
+
     function apiBase() {
-        return (localStorage.getItem(API_BASE_KEY) || "").replace(/\/$/, "");
+        const stored = localStorage.getItem(API_BASE_KEY);
+        return (stored || defaultApiBase()).replace(/\/$/, "");
     }
 
     function authToken() {
