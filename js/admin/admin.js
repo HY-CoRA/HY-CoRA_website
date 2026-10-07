@@ -80,7 +80,7 @@
 
         document.getElementById("add-past-event").addEventListener("click", () => {
             currentEvents.push({
-                id: Date.now(),
+                id: null,
                 imageUrl: "",
                 title: "",
                 description: "",
@@ -341,7 +341,7 @@
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             const next = {
-                id: form.id.value || Date.now(),
+                id: form.id.value || null,
                 status: form.status.value,
                 statusLabel: statusKo[form.status.value],
                 title: form.title.value.trim(),
@@ -469,7 +469,7 @@
             event.preventDefault();
             const now = new Date().toISOString().slice(0, 10).replaceAll("-", ".");
             const next = {
-                id: form.id.value || Date.now(),
+                id: form.id.value || null,
                 title: form.title.value.trim(),
                 category: form.category.value,
                 category_ko: categoryKo[form.category.value],

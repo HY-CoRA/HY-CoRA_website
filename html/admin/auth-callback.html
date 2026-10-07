@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1024" />
+  <meta name="robots" content="noindex" />
+  <meta name="referrer" content="no-referrer" />
+  <title>HY-CoRA Admin - 로그인</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body class="admin-page">
+  <div id="admin-login-overlay">
+    <div class="admin-login-box">
+      <div class="admin-login-logo">HY-CoRA</div>
+      <h2 class="admin-login-title">관리자 로그인</h2>
+      <p id="callback-message">로그인 링크를 확인하는 중입니다...</p>
+      <a id="callback-retry" class="admin-login-btn" href="site-content.html" hidden>로그인 화면으로 돌아가기</a>
+    </div>
+  </div>
+  <script src="../../js/site-data.js"></script>
+  <script>
+    (async function () {
+      const message = document.getElementById("callback-message");
+      const retry = document.getElementById("callback-retry");
+      const data = window.HYCorAData;
+      const token = new URLSearchParams(location.search).get("token");
+
+      // 토큰이 브라우저 기록에 남지 않도록 주소창에서 제거한다.
+      history.replaceState(null, "", location.pathname);
+
+      try {
+        if (!token) throw new Error("이 페이지는 새로고침할 수 없습니다. 메일 속 로그인 링크를 다시 눌러 주세요.");
+        if (!data?.apiReady()) throw new Error("API 주소가 설정되어 있지 않습니다.");
+
+        const result = await data.requestJson("/api/auth/magic-link/verify", {
+          method: "POST",
+          body: { token },
+        });
+        if (!result?.token) throw new Error("로그인 토큰을 받지 못했습니다.");
+
+        sessionStorage.setItem("hycora.admin.token", result.token);
+        if (result.user) {
+          sessionStorage.setItem("hycora.admin.user", JSON.stringify(result.user));
+        }
+        location.replace("index.html");
+      } catch (error) {
+        if (error.status === 401 || error.status === 400) {
+          message.textContent = "링크가 만료되었거나 이미 사용되었습니다. 다시 요청해 주세요.";
+        } else if (error instanceof TypeError) {
+          message.textContent = `백엔드 서버에 연결할 수 없습니다. (${data?.apiBase() || "주소 없음"})`;
+        } else {
+          message.textContent = error.message || "로그인에 실패했습니다.";
+        }
+        retry.hidden = false;
+      }
+    })();
+  </script>
+</body>
+</html>
