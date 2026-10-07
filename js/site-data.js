@@ -345,8 +345,12 @@
 
     async function savePastEvents(value) {
         if (!apiReady()) {
-            writeLocal("pastEvents", value);
-            return value;
+            const withIds = value.map((item, index) => ({
+                ...item,
+                id: item.id || item._id || Date.now() + index,
+            }));
+            writeLocal("pastEvents", withIds);
+            return withIds;
         }
 
         const saved = [];
