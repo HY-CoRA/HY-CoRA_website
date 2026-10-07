@@ -184,8 +184,7 @@
                     <div id="admin-login-error" class="admin-login-error" hidden></div>
                     ${
                         apiMode
-                            ? `<button type="submit" class="admin-login-btn">Passkey로 로그인</button>
-                               <button type="button" id="admin-magic-link-btn" class="admin-login-btn secondary">Magic link 받기</button>`
+                            ? `<button type="submit" class="admin-login-btn">로그인 링크 받기</button>`
                             : `<button type="submit" class="admin-login-btn">임시 로컬 로그인</button>`
                     }
                 </form>
@@ -197,7 +196,6 @@
         const emailInput = document.getElementById("admin-email-input");
         const passwordInput = document.getElementById("admin-password-input");
         const errorEl = document.getElementById("admin-login-error");
-        const magicBtn = document.getElementById("admin-magic-link-btn");
 
         const showError = (message) => {
             errorEl.hidden = false;
@@ -212,31 +210,22 @@
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             errorEl.hidden = true;
+            errorEl.style.color = "";
 
             try {
                 if (apiMode) {
-                    await loginWithPasskey(emailInput.value.trim());
-                } else {
-                    await verifyLegacyPassword(passwordInput.value);
+                    await requestMagicLink(emailInput.value.trim());
+                    errorEl.hidden = false;
+                    errorEl.style.color = "#177a3c";
+                    errorEl.textContent = "로그인 링크를 보냈습니다. 메일함을 확인해 주세요.";
+                    return;
                 }
+                await verifyLegacyPassword(passwordInput.value);
                 overlay.remove();
                 document.documentElement.style.visibility = "";
                 addLogoutButton();
             } catch (error) {
                 showError(error.message || "로그인에 실패했습니다.");
-            }
-        });
-
-        magicBtn?.addEventListener("click", async () => {
-            errorEl.hidden = true;
-            try {
-                await requestMagicLink(emailInput.value.trim());
-                errorEl.hidden = false;
-                errorEl.style.color = "#177a3c";
-                errorEl.textContent = "로그인 링크를 보냈습니다. 메일함을 확인해 주세요.";
-            } catch (error) {
-                errorEl.style.color = "";
-                showError(error.message || "Magic link 요청에 실패했습니다.");
             }
         });
 
